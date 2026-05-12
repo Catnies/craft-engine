@@ -537,7 +537,7 @@ public abstract class AbstractFontManager implements FontManager {
                             return bitmapImage;
                         }
                         return DummyImage.INSTANCE;
-                    }), row, col);
+                    }), refId, row, col);
                 } else {
                     referenceImage = new ReferenceImage(LazyReference.lazyReference(() -> {
                         Optional<BitmapImage> bitmapImage = bitmapImageById(refId);
@@ -545,7 +545,7 @@ public abstract class AbstractFontManager implements FontManager {
                             return bitmapImage.get();
                         }
                         return DummyImage.INSTANCE;
-                    }), row, col);
+                    }), refId, row, col);
                 }
 
                 AbstractFontManager.this.images.put(id, referenceImage);

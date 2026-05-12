@@ -211,6 +211,11 @@ public final class TranslationManagerImpl implements TranslationManager {
         return this.serverLangData.keySet();
     }
 
+    @Override
+    public ServerLangData translationData(String key) {
+        return this.serverLangData.get(key);
+    }
+
     private void loadFromCache() {
         // 第一阶段：先注册所有没有国家/地区的locale
         for (Map.Entry<Locale, CachedTranslation> entry : this.cachedTranslations.entrySet()) {

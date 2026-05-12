@@ -5,8 +5,12 @@ import com.google.gson.JsonObject;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FormatUtils;
+import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 public final class BitmapImage implements Supplier<JsonObject>, Image {
@@ -121,5 +125,38 @@ public final class BitmapImage implements Supplier<JsonObject>, Image {
             charArray.add(stringBuilder.toString());
         }
         return jsonObject;
+    }
+
+    // Velocity
+    public static BitmapImage read(FriendlyByteBuf buf) {
+        Key id = buf.readKey();
+        Key font = buf.readKey();
+        int[][] codepointGrid = buf.readCollection(
+                value -> new ArrayList<>(),
+                buf1 -> buf1.readCollection(
+                        value -> new ArrayList<>(),
+                        FriendlyByteBuf::readVarInt
+                )
+        ).stream()
+                .map(list -> list.stream()
+                        .mapToInt(Integer::intValue)
+                        .toArray())
+                .toArray(int[][]::new);
+        return new BitmapImage(id, font, 0, 0, "", codepointGrid);
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        buf.writeKey(this.id);
+        buf.writeKey(this.font);
+        List<int[]> list = Arrays.asList(codepointGrid);
+        buf.writeCollection(
+                list,
+                (buf1, l1) -> {
+                    buf1.writeCollection(
+                            Arrays.stream(l1).boxed().toList(),
+                            FriendlyByteBuf::writeVarInt
+                    );
+                }
+        );
     }
 }
