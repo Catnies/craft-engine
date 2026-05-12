@@ -6,33 +6,34 @@ import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.CharacterUtils;
+import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
 public final class OffsetFont {
-    private final net.momirealms.craftengine.core.util.Key font;
-    private final Key fontKey;
+    public final net.momirealms.craftengine.core.util.Key font;
+    public final Key fontKey;
 
-    private final String NEG_16;
-    private final String NEG_24;
-    private final String NEG_32;
-    private final String NEG_48;
-    private final String NEG_64;
-    private final String NEG_128;
-    private final String NEG_256;
+    public final String NEG_16;
+    public final String NEG_24;
+    public final String NEG_32;
+    public final String NEG_48;
+    public final String NEG_64;
+    public final String NEG_128;
+    public final String NEG_256;
 
-    private final String POS_16;
-    private final String POS_24;
-    private final String POS_32;
-    private final String POS_48;
-    private final String POS_64;
-    private final String POS_128;
-    private final String POS_256;
+    public final String POS_16;
+    public final String POS_24;
+    public final String POS_32;
+    public final String POS_48;
+    public final String POS_64;
+    public final String POS_128;
+    public final String POS_256;
 
-    private final String[] negativeOffsets = new String[16];
-    private final String[] positiveOffsets = new String[16];
+    public final String[] negativeOffsets = new String[16];
+    public final String[] positiveOffsets = new String[16];
 
     private final Cache<Integer, String> fastLookup = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
@@ -150,11 +151,61 @@ public final class OffsetFont {
         return stringBuilder.toString();
     }
 
-    private String convertIfUnicode(String s) {
-        if (s.startsWith("\\u")) {
-            return new String(CharacterUtils.decodeUnicodeToChars(font.asString()));
+    private String convertIfUnicode(String str) {
+        if (str.startsWith("\\u")) {
+            return new String(CharacterUtils.decodeUnicodeToChars(str));
         } else {
-            return s;
+            return str;
         }
+    }
+
+    // Velocity
+    public OffsetFont(FriendlyByteBuf buf) {
+        font = buf.readKey();
+        fontKey = Key.key(font.namespace, font.value);
+        for (int i = 1; i <= 15; i++) {
+            negativeOffsets[i] = buf.readUtf();
+        }
+        NEG_16 = buf.readUtf();
+        NEG_24 = buf.readUtf();
+        NEG_32 = buf.readUtf();
+        NEG_48 = buf.readUtf();
+        NEG_64 = buf.readUtf();
+        NEG_128 = buf.readUtf();
+        NEG_256 = buf.readUtf();
+        for (int i = 1; i <= 15; i++) {
+            positiveOffsets[i] = buf.readUtf();
+        }
+        POS_16 = buf.readUtf();
+        POS_24 = buf.readUtf();
+        POS_32 = buf.readUtf();
+        POS_48 = buf.readUtf();
+        POS_64 = buf.readUtf();
+        POS_128 = buf.readUtf();
+        POS_256 = buf.readUtf();
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        buf.writeKey(font);
+        for (int i = 1; i <= 15; i++) {
+            buf.writeUtf(this.negativeOffsets[i]);
+        }
+        buf.writeUtf(this.NEG_16);
+        buf.writeUtf(this.NEG_24);
+        buf.writeUtf(this.NEG_32);
+        buf.writeUtf(this.NEG_48);
+        buf.writeUtf(this.NEG_64);
+        buf.writeUtf(this.NEG_128);
+        buf.writeUtf(this.NEG_256);
+        for (int i = 1; i <= 15; i++) {
+            buf.writeUtf(this.positiveOffsets[i]);
+        }
+        buf.writeUtf(this.POS_16);
+        buf.writeUtf(this.POS_24);
+        buf.writeUtf(this.POS_32);
+        buf.writeUtf(this.POS_48);
+        buf.writeUtf(this.POS_64);
+        buf.writeUtf(this.POS_128);
+        buf.writeUtf(this.POS_256);
     }
 }

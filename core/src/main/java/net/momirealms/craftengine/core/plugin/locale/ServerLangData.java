@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.plugin.locale;
 
+import net.momirealms.craftengine.core.util.FriendlyByteBuf;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -29,5 +31,33 @@ public final class ServerLangData {
             }
         }
         return translation;
+    }
+
+    // Velocity
+    public static ServerLangData read(FriendlyByteBuf buf) {
+        String fallback = buf.readBoolean() ? buf.readUtf() : null;
+        ServerLangData serverLangData = new ServerLangData(fallback);
+        // 读取
+        int size = buf.readVarInt();
+        for (int i = 0; i < size; i++) {
+            Locale locale = Locale.forLanguageTag(buf.readUtf());
+            String translation = buf.readUtf();
+            serverLangData.addTranslation(locale, translation);
+        }
+        return serverLangData;
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        // fallback
+        buf.writeBoolean(this.fallback != null);
+        if (this.fallback != null) {
+            buf.writeUtf(this.fallback);
+        }
+        // translations
+        buf.writeVarInt(this.translations.size());
+        for (Map.Entry<Locale, String> entry : this.translations.entrySet()) {
+            buf.writeUtf(entry.getKey().toLanguageTag());
+            buf.writeUtf(entry.getValue());
+        }
     }
 }
