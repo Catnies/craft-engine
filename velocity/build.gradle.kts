@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation(project(":core"))
-    implementation(project(":core:adventure"))
+//    implementation(project(":core:adventure"))
     implementation(rootProject.files("${rootProject.rootDir}/libs/boosted-yaml-${rootProject.properties["boosted_yaml_version"]}.jar"))
     implementation("it.unimi.dsi:fastutil:${rootProject.properties["fastutil_version"]}")
     implementation("com.github.ben-manes.caffeine:caffeine:${rootProject.properties["caffeine_version"]}")
@@ -27,7 +27,7 @@ dependencies {
 
 tasks {
     shadowJar {
-        relocation.applyCommon(this)
+        relocation.applyVelocity(this)
         archiveFileName = "${rootProject.name}-velocity-plugin-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
     }
@@ -36,4 +36,3 @@ tasks {
         velocityVersion("3.5.0-SNAPSHOT")
     }
 }
-
