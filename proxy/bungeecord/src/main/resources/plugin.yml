@@ -1,0 +1,6 @@
+name: CraftEngine
+main: net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin
+version: ${project_version}
+author: Catnies
+depends:
+  - packetevents

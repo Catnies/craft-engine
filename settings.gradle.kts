@@ -9,7 +9,10 @@ include(":bukkit:compatibility:legacy")
 include(":bukkit:loader")
 include(":bukkit:proxy")
 include(":bukkit:paper-loader")
-include(":velocity")
+include(":proxy")
+include(":proxy:velocity")
+include(":proxy:bungeecord")
+
 pluginManagement {
     plugins {
         kotlin("jvm") version "2.3.10"

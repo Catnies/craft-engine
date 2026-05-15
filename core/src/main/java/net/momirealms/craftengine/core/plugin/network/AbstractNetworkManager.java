@@ -102,7 +102,7 @@ public abstract class AbstractNetworkManager implements NetworkManager {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @Override // <red>11<green>22</green>33</red>
+    @Override
     public Map<String, ComponentProvider> matchNetworkTags(String text) {
         Map<String, ComponentProvider> tags = new HashMap<>();
         List<Token> root = TokenParser.tokenize(text, true);
