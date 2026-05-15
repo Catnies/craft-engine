@@ -2,31 +2,31 @@ package net.momirealms.craftengine.proxy.bungeecord;
 
 import net.md_5.bungee.api.plugin.Plugin;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
-import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
-import net.momirealms.craftengine.proxy.bungeecord.font.BungeeFontDataBridge;
+import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
+import net.momirealms.craftengine.proxy.bungeecord.font.BungeeNetworkTagDataBridge;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 
 public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEngineProxyPlugin {
     public static CraftEngineBungeeCordPlugin INSTANCE;
-    private BungeeFontDataBridge bungeeFontDataBridge;
+    private BungeeNetworkTagDataBridge bungeeNetworkTagDataBridge;
 
     @Override
     public void onEnable() {
         INSTANCE = this;
         AdventureHelper.init();
-        this.bungeeFontDataBridge = new BungeeFontDataBridge(this);
-        this.bungeeFontDataBridge.load();
+        this.bungeeNetworkTagDataBridge = new BungeeNetworkTagDataBridge(this);
+        this.bungeeNetworkTagDataBridge.load();
     }
 
     @Override
     public void onDisable() {
-        if (this.bungeeFontDataBridge != null) {
-            this.bungeeFontDataBridge.disable();
+        if (this.bungeeNetworkTagDataBridge != null) {
+            this.bungeeNetworkTagDataBridge.disable();
         }
     }
 
     @Override
-    public FontDataSyncService fontDataSyncService() {
-        return this.bungeeFontDataBridge.fontDataSyncService();
+    public NetwrokTagDataSyncService networkTagDataSyncService() {
+        return this.bungeeNetworkTagDataBridge.networkTagDataSyncService();
     }
 }

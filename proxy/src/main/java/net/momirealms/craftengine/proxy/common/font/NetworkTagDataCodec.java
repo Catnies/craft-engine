@@ -13,14 +13,14 @@ import net.momirealms.craftengine.core.util.LazyReference;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class FontDataCodec {
-    private final FontDataRegistry registry;
+public final class NetworkTagDataCodec {
+    private final NetworkTagDataRegistry registry;
 
-    public FontDataCodec(FontDataRegistry registry) {
+    public NetworkTagDataCodec(NetworkTagDataRegistry registry) {
         this.registry = registry;
     }
 
-    public FontData read(String serverName, FriendlyByteBuf in) {
+    public NetworkTagData read(String serverName, FriendlyByteBuf in) {
         long version = in.readLong();
         OffsetFont offsetFont = new OffsetFont(in);
 
@@ -35,9 +35,9 @@ public final class FontDataCodec {
             } else if (type == 1) {
                 Key refId = in.readKey();
                 image = new ReferenceImage(LazyReference.lazyReference(() -> {
-                    FontData fontData = this.registry.get(serverName);
-                    if (fontData != null) {
-                        Image img = fontData.images().get(refId);
+                    NetworkTagData netWorkTagData = this.registry.get(serverName);
+                    if (netWorkTagData != null) {
+                        Image img = netWorkTagData.images().get(refId);
                         if (img instanceof BitmapImage bitmapImage) {
                             return bitmapImage;
                         }
@@ -66,15 +66,15 @@ public final class FontDataCodec {
             global.put(key, value);
         }
 
-        return new FontData(serverName, version, offsetFont, images, l10n, global);
+        return new NetworkTagData(serverName, version, offsetFont, images, l10n, global);
     }
 
-    public void write(FontData fontData, FriendlyByteBuf out) {
-        out.writeLong(fontData.version());
-        fontData.offset().write(out);
+    public void write(NetworkTagData netWorkTagData, FriendlyByteBuf out) {
+        out.writeLong(netWorkTagData.version());
+        netWorkTagData.offset().write(out);
 
-        out.writeVarInt(fontData.images().size());
-        for (Map.Entry<Key, Image> entry : fontData.images().entrySet()) {
+        out.writeVarInt(netWorkTagData.images().size());
+        for (Map.Entry<Key, Image> entry : netWorkTagData.images().entrySet()) {
             out.writeKey(entry.getKey());
             Image image = entry.getValue();
             if (image instanceof BitmapImage bitmapImage) {
@@ -88,14 +88,14 @@ public final class FontDataCodec {
             }
         }
 
-        out.writeVarInt(fontData.l10n().size());
-        for (Map.Entry<String, ServerLangData> entry : fontData.l10n().entrySet()) {
+        out.writeVarInt(netWorkTagData.l10n().size());
+        for (Map.Entry<String, ServerLangData> entry : netWorkTagData.l10n().entrySet()) {
             out.writeUtf(entry.getKey());
             entry.getValue().write(out);
         }
 
-        out.writeVarInt(fontData.global().size());
-        for (Map.Entry<String, String> entry : fontData.global().entrySet()) {
+        out.writeVarInt(netWorkTagData.global().size());
+        for (Map.Entry<String, String> entry : netWorkTagData.global().entrySet()) {
             out.writeUtf(entry.getKey());
             out.writeUtf(entry.getValue());
         }

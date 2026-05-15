@@ -15,27 +15,27 @@ import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
-import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.network.TextReplacePacketListener;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import org.jetbrains.annotations.Nullable;
 
-public class BungeeFontDataBridge implements Manageable, Listener {
-    public static final String IDENTIFIER = FontDataSyncService.FONT_DATA_CHANNEL;
+public class BungeeNetworkTagDataBridge implements Manageable, Listener {
+    public static final String IDENTIFIER = NetwrokTagDataSyncService.TAG_DATA_CHANNEL;
 
     private final CraftEngineBungeeCordPlugin plugin;
-    private final FontDataSyncService fontDataSyncService;
+    private final NetwrokTagDataSyncService netwrokTagDataSyncService;
     private final TextReplacePacketListener textReplacePacketListener;
     private PacketListenerCommon registeredPacketListener;
 
-    public BungeeFontDataBridge(CraftEngineBungeeCordPlugin plugin) {
+    public BungeeNetworkTagDataBridge(CraftEngineBungeeCordPlugin plugin) {
         this.plugin = plugin;
-        this.fontDataSyncService = new FontDataSyncService();
-        this.textReplacePacketListener = new TextReplacePacketListener(this.fontDataSyncService, this::wrapPlayer);
+        this.netwrokTagDataSyncService = new NetwrokTagDataSyncService();
+        this.textReplacePacketListener = new TextReplacePacketListener(this.netwrokTagDataSyncService, this::wrapPlayer);
     }
 
-    public FontDataSyncService fontDataSyncService() {
-        return this.fontDataSyncService;
+    public NetwrokTagDataSyncService networkTagDataSyncService() {
+        return this.netwrokTagDataSyncService;
     }
 
     @Override
@@ -52,16 +52,16 @@ public class BungeeFontDataBridge implements Manageable, Listener {
         if (this.registeredPacketListener != null) {
             PacketEvents.getAPI().getEventManager().unregisterListener(this.registeredPacketListener);
         }
-        this.fontDataSyncService.clear();
+        this.netwrokTagDataSyncService.clear();
     }
 
     @EventHandler
     public void onServerConnected(ServerConnectedEvent event) {
-        this.fontDataSyncService.sendFontDataVersion(BungeePlayer.wrapper(event.getPlayer()));
+        this.netwrokTagDataSyncService.sendTagDataVersion(BungeePlayer.wrapper(event.getPlayer()));
     }
 
     @EventHandler
-    public void receiveFontData(PluginMessageEvent event) {
+    public void receiveTagData(PluginMessageEvent event) {
         if (!IDENTIFIER.equals(event.getTag())) return;
         event.setCancelled(true);
         if (!(event.getSender() instanceof Server server)) return;
@@ -69,7 +69,7 @@ public class BungeeFontDataBridge implements Manageable, Listener {
         ByteBuf buffer = Unpooled.buffer(event.getData().length);
         buffer.writeBytes(event.getData());
         FriendlyByteBuf in = new FriendlyByteBuf(buffer);
-        this.fontDataSyncService.receiveFontData(server.getInfo().getName(), in);
+        this.netwrokTagDataSyncService.receiveTagData(server.getInfo().getName(), in);
     }
 
     @Nullable

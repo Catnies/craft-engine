@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FontData {
+public class NetworkTagData {
     public static final Set<String> NETWORK_TAGS = Set.of("image", "l10n", "shift", "global");
     public static final Locale SYSTEM_LOCALE = Locale.getDefault();
 
@@ -32,7 +32,7 @@ public class FontData {
     private final TagResolver[] tagResolvers;
     private final Map<String, ComponentProvider> networkTagMapper;
 
-    public FontData(
+    public NetworkTagData(
             String serverName,
             long version,
             OffsetFont offset,

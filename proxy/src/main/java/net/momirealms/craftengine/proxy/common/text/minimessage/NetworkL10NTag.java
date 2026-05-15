@@ -28,7 +28,7 @@ public final class NetworkL10NTag implements TagResolver {
         }
         Locale locale = context.player().locale();
         String l10n = aq.popOr("No argument l10n key provided").toString();
-        String translation = context.fontData().miniMessageTranslation(l10n, locale);
+        String translation = context.tagData().miniMessageTranslation(l10n, locale);
         if (aq.hasNext()) {
             List<Component> arguments = new ArrayList<>();
             while (aq.hasNext()) {

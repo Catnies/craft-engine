@@ -7,15 +7,15 @@ import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.momirealms.craftengine.core.font.Image;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.proxy.common.font.FontData;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class ImageTag implements TagResolver {
-    private final FontData fontData;
+    private final NetworkTagData netWorkTagData;
 
-    public ImageTag(FontData fontData) {
-        this.fontData = fontData;
+    public ImageTag(NetworkTagData netWorkTagData) {
+        this.netWorkTagData = netWorkTagData;
     }
 
     @Override
@@ -27,7 +27,7 @@ public final class ImageTag implements TagResolver {
         if (arguments.hasNext()) {
             String id = arguments.popOr("No argument id provided").toString();
 
-            Image image = this.fontData.imageById(Key.of(namespaceOrId, id));
+            Image image = this.netWorkTagData.imageById(Key.of(namespaceOrId, id));
             if (image != null) {
                 if (arguments.hasNext()) {
                     String rowOrFormat = arguments.popOr("No argument row provided").toString();
@@ -54,7 +54,7 @@ public final class ImageTag implements TagResolver {
                 throw ctx.newException("Invalid image id", arguments);
             }
         } else {
-            Image image = this.fontData.imageByIdValue(namespaceOrId);
+            Image image = this.netWorkTagData.imageByIdValue(namespaceOrId);
             if (image != null) {
                 return Tag.selfClosingInserting(image.componentAt(0, 0));
             } else {

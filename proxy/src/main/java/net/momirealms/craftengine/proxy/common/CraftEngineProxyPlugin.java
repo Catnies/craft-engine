@@ -1,9 +1,9 @@
 package net.momirealms.craftengine.proxy.common;
 
-import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
 
 public interface CraftEngineProxyPlugin {
 
-    FontDataSyncService fontDataSyncService();
+    NetwrokTagDataSyncService networkTagDataSyncService();
 
 }

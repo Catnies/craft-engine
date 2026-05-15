@@ -8,8 +8,8 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
-import net.momirealms.craftengine.proxy.common.font.FontData;
-import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
+import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class TextReplacePacketListener implements PacketListener {
-    private final FontDataSyncService fontDataSyncService;
+    private final NetwrokTagDataSyncService netwrokTagDataSyncService;
     private final Function<Object, @Nullable ProxyPlayer> playerWrapper;
 
-    public TextReplacePacketListener(FontDataSyncService fontDataSyncService, Function<Object, @Nullable ProxyPlayer> playerWrapper) {
-        this.fontDataSyncService = fontDataSyncService;
+    public TextReplacePacketListener(NetwrokTagDataSyncService netwrokTagDataSyncService, Function<Object, @Nullable ProxyPlayer> playerWrapper) {
+        this.netwrokTagDataSyncService = netwrokTagDataSyncService;
         this.playerWrapper = playerWrapper;
     }
 
@@ -51,19 +51,19 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerPlayerListHeaderAndFooter wrapper = new WrapperPlayServerPlayerListHeaderAndFooter(event);
         Component headerComponent = wrapper.getHeader();
         Component footerComponent = wrapper.getFooter();
         String headerJson = GsonComponentSerializer.gson().serialize(headerComponent);
         String footerJson = GsonComponentSerializer.gson().serialize(footerComponent);
-        Map<String, ComponentProvider> tokens1 = fontData.matchNetworkTags(headerJson);
-        Map<String, ComponentProvider> tokens2 = fontData.matchNetworkTags(footerJson);
+        Map<String, ComponentProvider> tokens1 = netWorkTagData.matchNetworkTags(headerJson);
+        Map<String, ComponentProvider> tokens2 = netWorkTagData.matchNetworkTags(footerJson);
         if (tokens1.isEmpty() && tokens2.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         if (!tokens1.isEmpty()) headerComponent = AdventureHelper.replaceText(headerComponent, tokens1, context);
         if (!tokens2.isEmpty()) footerComponent = AdventureHelper.replaceText(footerComponent, tokens2, context);
 
@@ -76,8 +76,8 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerTeams wrapper = new WrapperPlayServerTeams(event);
         WrapperPlayServerTeams.ScoreBoardTeamInfo teamInfo = wrapper.getTeamInfo().orElse(null);
@@ -89,12 +89,12 @@ public class TextReplacePacketListener implements PacketListener {
         String displayNameJson = GsonComponentSerializer.gson().serialize(displayNameComponent);
         String prefixJson = GsonComponentSerializer.gson().serialize(prefixComponent);
         String suffixJson = GsonComponentSerializer.gson().serialize(suffixComponent);
-        Map<String, ComponentProvider> tokens1 = fontData.matchNetworkTags(displayNameJson);
-        Map<String, ComponentProvider> tokens2 = fontData.matchNetworkTags(prefixJson);
-        Map<String, ComponentProvider> tokens3 = fontData.matchNetworkTags(suffixJson);
+        Map<String, ComponentProvider> tokens1 = netWorkTagData.matchNetworkTags(displayNameJson);
+        Map<String, ComponentProvider> tokens2 = netWorkTagData.matchNetworkTags(prefixJson);
+        Map<String, ComponentProvider> tokens3 = netWorkTagData.matchNetworkTags(suffixJson);
         if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         if (!tokens1.isEmpty()) displayNameComponent = AdventureHelper.replaceText(displayNameComponent, tokens1, context);
         if (!tokens2.isEmpty()) prefixComponent = AdventureHelper.replaceText(prefixComponent, tokens2, context);
         if (!tokens2.isEmpty()) suffixComponent = AdventureHelper.replaceText(suffixComponent, tokens2, context);
@@ -108,8 +108,8 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerBossBar wrapper = new WrapperPlayServerBossBar(event);
         if (wrapper.getAction() != WrapperPlayServerBossBar.Action.ADD
@@ -118,10 +118,10 @@ public class TextReplacePacketListener implements PacketListener {
         Component titleComponent = wrapper.getTitle();
 
         String titleJson = GsonComponentSerializer.gson().serialize(titleComponent);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(titleJson);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(titleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         titleComponent = AdventureHelper.replaceText(titleComponent, tokens, context);
 
         wrapper.setTitle(titleComponent);
@@ -132,8 +132,8 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerTitle wrapper = new WrapperPlayServerTitle(event);
         if (wrapper.getAction() == WrapperPlayServerTitle.TitleAction.SET_TITLE) {
@@ -141,20 +141,20 @@ public class TextReplacePacketListener implements PacketListener {
             if (titleComponent == null) return;
 
             String titleJson = GsonComponentSerializer.gson().serialize(titleComponent);
-            Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(titleJson);
+            Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(titleJson);
             if (tokens.isEmpty()) return;
 
-            NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+            NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
             wrapper.setTitle(AdventureHelper.replaceText(titleComponent, tokens, context));
         } else if (wrapper.getAction() == WrapperPlayServerTitle.TitleAction.SET_SUBTITLE) {
             Component subtitleComponent = wrapper.getSubtitle();
             if (subtitleComponent == null) return;
 
             String subtitleJson = GsonComponentSerializer.gson().serialize(subtitleComponent);
-            Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
+            Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(subtitleJson);
             if (tokens.isEmpty()) return;
 
-            NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+            NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
             wrapper.setSubtitle(AdventureHelper.replaceText(subtitleComponent, tokens, context));
         }
     }
@@ -164,17 +164,17 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerSetTitleText wrapper = new WrapperPlayServerSetTitleText(event);
         Component component = wrapper.getTitle();
 
         String titleJson = GsonComponentSerializer.gson().serialize(component);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(titleJson);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(titleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         wrapper.setTitle(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -183,17 +183,17 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerSetTitleSubtitle wrapper = new WrapperPlayServerSetTitleSubtitle(event);
         Component component = wrapper.getSubtitle();
 
         String subtitleJson = GsonComponentSerializer.gson().serialize(component);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         wrapper.setSubtitle(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -202,17 +202,17 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerActionBar wrapper = new WrapperPlayServerActionBar(event);
         Component component = wrapper.getActionBarText();
 
         String subtitleJson = GsonComponentSerializer.gson().serialize(component);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         wrapper.setActionBarText(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -221,17 +221,17 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerSystemChatMessage wrapper = new WrapperPlayServerSystemChatMessage(event);
         Component component = wrapper.getMessage();
 
         String subtitleJson = GsonComponentSerializer.gson().serialize(component);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         wrapper.setMessage(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -240,18 +240,18 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerUpdateScore wrapper = new WrapperPlayServerUpdateScore(event);
         Component component = wrapper.getEntityDisplayName();
         if (component == null) return;
 
         String json = GsonComponentSerializer.gson().serialize(component);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(json);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(json);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         wrapper.setEntityDisplayName(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -260,8 +260,8 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        FontData fontData = this.fontDataSyncService.getFontDataForPlayer(player);
-        if (fontData == null) return;
+        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        if (netWorkTagData == null) return;
 
         WrapperPlayServerScoreboardObjective wrapper = new WrapperPlayServerScoreboardObjective(event);
         WrapperPlayServerScoreboardObjective.ObjectiveMode mode = wrapper.getMode();
@@ -269,10 +269,10 @@ public class TextReplacePacketListener implements PacketListener {
 
         Component component = wrapper.getDisplayName();
         String subtitleJson = GsonComponentSerializer.gson().serialize(component);
-        Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
+        Map<String, ComponentProvider> tokens = netWorkTagData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, netWorkTagData);
         wrapper.setDisplayName(AdventureHelper.replaceText(component, tokens, context));
     }
 }

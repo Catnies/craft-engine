@@ -13,29 +13,29 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
-import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.network.TextReplacePacketListener;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 import org.jetbrains.annotations.Nullable;
 
-public class VelocityFontDataBridge implements Manageable {
-    public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(FontDataSyncService.FONT_DATA_CHANNEL);
+public class VelocityNetworkTagDataBridge implements Manageable {
+    public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetwrokTagDataSyncService.TAG_DATA_CHANNEL);
 
     private final CraftEngineVelocityPlugin plugin;
-    private final FontDataSyncService fontDataSyncService;
+    private final NetwrokTagDataSyncService netwrokTagDataSyncService;
     private final TextReplacePacketListener textReplacePacketListener;
     private PacketListenerCommon registeredPacketListener;
 
-    public VelocityFontDataBridge(CraftEngineVelocityPlugin plugin) {
+    public VelocityNetworkTagDataBridge(CraftEngineVelocityPlugin plugin) {
         this.plugin = plugin;
-        this.fontDataSyncService = new FontDataSyncService();
-        this.textReplacePacketListener = new TextReplacePacketListener(this.fontDataSyncService, this::wrapPlayer);
+        this.netwrokTagDataSyncService = new NetwrokTagDataSyncService();
+        this.textReplacePacketListener = new TextReplacePacketListener(this.netwrokTagDataSyncService, this::wrapPlayer);
     }
 
-    public FontDataSyncService fontDataSyncService() {
-        return this.fontDataSyncService;
+    public NetwrokTagDataSyncService networkTagDataSyncService() {
+        return this.netwrokTagDataSyncService;
     }
 
     @Override
@@ -52,16 +52,16 @@ public class VelocityFontDataBridge implements Manageable {
         if (this.registeredPacketListener != null) {
             PacketEvents.getAPI().getEventManager().unregisterListener(this.registeredPacketListener);
         }
-        this.fontDataSyncService.clear();
+        this.netwrokTagDataSyncService.clear();
     }
 
     @Subscribe
     public void onPlayerConnected(ServerPostConnectEvent event) {
-        this.fontDataSyncService.sendFontDataVersion(VelocityPlayer.wrapper(event.getPlayer()));
+        this.netwrokTagDataSyncService.sendTagDataVersion(VelocityPlayer.wrapper(event.getPlayer()));
     }
 
     @Subscribe
-    public void receiveFontData(PluginMessageEvent event) {
+    public void receiveTagData(PluginMessageEvent event) {
         if (!IDENTIFIER.equals(event.getIdentifier())) return;
         event.setResult(PluginMessageEvent.ForwardResult.handled());
 
@@ -73,7 +73,7 @@ public class VelocityFontDataBridge implements Manageable {
                 : null;
         if (serverName == null) return;
 
-        this.fontDataSyncService.receiveFontData(serverName, in);
+        this.netwrokTagDataSyncService.receiveTagData(serverName, in);
     }
 
     @Nullable

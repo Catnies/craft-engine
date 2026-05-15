@@ -8,15 +8,15 @@ import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.momirealms.craftengine.core.font.OffsetFont;
 import net.momirealms.craftengine.core.util.FormatUtils;
-import net.momirealms.craftengine.proxy.common.font.FontData;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class ShiftTag implements TagResolver {
     private final OffsetFont offsetFont;
 
-    public ShiftTag(FontData fontData) {
-        this.offsetFont = fontData.offset();
+    public ShiftTag(NetworkTagData netWorkTagData) {
+        this.offsetFont = netWorkTagData.offset();
     }
 
     @Override

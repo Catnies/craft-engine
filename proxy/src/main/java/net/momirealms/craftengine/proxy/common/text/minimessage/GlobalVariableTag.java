@@ -6,7 +6,7 @@ import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.momirealms.craftengine.core.plugin.text.minimessage.IndexedArgumentTag;
-import net.momirealms.craftengine.proxy.common.font.FontData;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,10 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GlobalVariableTag implements TagResolver {
-    private final FontData fontData;
+    private final NetworkTagData netWorkTagData;
 
-    public GlobalVariableTag(FontData fontData) {
-        this.fontData = fontData;
+    public GlobalVariableTag(NetworkTagData netWorkTagData) {
+        this.netWorkTagData = netWorkTagData;
     }
 
     @Override
@@ -26,7 +26,7 @@ public final class GlobalVariableTag implements TagResolver {
             return null;
         }
         String id = arguments.popOr("No argument variable id provided").toString();
-        String value = this.fontData.getGlobalVariable(id);
+        String value = this.netWorkTagData.getGlobalVariable(id);
         if (value == null) {
             throw ctx.newException("Unknown variable: ", arguments);
         }

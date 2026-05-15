@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.plugin.context.ContextKey;
 import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
-import net.momirealms.craftengine.proxy.common.font.FontData;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
 import net.momirealms.craftengine.proxy.common.text.minimessage.NetworkL10NTag;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,16 +19,16 @@ public final class NetworkTextReplaceContext implements Context {
     private final ContextHolder contexts;
     private final ProxyPlayer player;
     private final TagResolver[] staticTagResolvers;
-    private final FontData fontData;
+    private final NetworkTagData netWorkTagData;
     private TagResolver[] tagResolvers;
 
-    public NetworkTextReplaceContext(ProxyPlayer player, FontData fontData) {
+    public NetworkTextReplaceContext(ProxyPlayer player, NetworkTagData netWorkTagData) {
         this.contexts = ContextHolder.trustedMutable(MiscUtils.init(new HashMap<>(4), it -> {
             it.put(PLAYER, () -> player);
         }));
         this.player = player;
-        this.fontData = fontData;
-        this.staticTagResolvers = fontData.tagResolvers();
+        this.netWorkTagData = netWorkTagData;
+        this.staticTagResolvers = netWorkTagData.tagResolvers();
     }
 
     @NotNull
@@ -37,8 +37,8 @@ public final class NetworkTextReplaceContext implements Context {
     }
 
     @NotNull
-    public FontData fontData() {
-        return this.fontData;
+    public NetworkTagData tagData() {
+        return this.netWorkTagData;
     }
 
     @Override

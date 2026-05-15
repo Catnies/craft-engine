@@ -8,24 +8,24 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class FontDataRegistry {
-    private final Map<String, FontData> serverFonts = new ConcurrentHashMap<>();
+public final class NetworkTagDataRegistry {
+    private final Map<String, NetworkTagData> serverFonts = new ConcurrentHashMap<>();
 
     @Nullable
-    public FontData get(String serverName) {
+    public NetworkTagData get(String serverName) {
         return this.serverFonts.get(serverName);
     }
 
     @Nullable
-    public FontData getForPlayer(ProxyPlayer player) {
+    public NetworkTagData getForPlayer(ProxyPlayer player) {
         return Optional.ofNullable(player.server())
                 .map(BackendServer::name)
                 .map(this::get)
                 .orElse(null);
     }
 
-    public void put(String serverName, FontData fontData) {
-        this.serverFonts.put(serverName, fontData);
+    public void put(String serverName, NetworkTagData netWorkTagData) {
+        this.serverFonts.put(serverName, netWorkTagData);
     }
 
     public void clear() {

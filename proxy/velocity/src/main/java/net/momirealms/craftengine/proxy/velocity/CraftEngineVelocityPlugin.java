@@ -10,9 +10,9 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
-import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
-import net.momirealms.craftengine.proxy.velocity.font.VelocityFontDataBridge;
+import net.momirealms.craftengine.proxy.velocity.font.VelocityNetworkTagDataBridge;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
@@ -32,7 +32,7 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
     public final Logger logger;
     public final PluginContainer pluginContainer;
     public final Path dataDirectory;
-    private VelocityFontDataBridge velocityFontDataBridge;
+    private VelocityNetworkTagDataBridge velocityNetworkTagDataBridge;
 
     @Inject
     public CraftEngineVelocityPlugin(ProxyServer server, Logger logger, PluginContainer pluginContainer, @DataDirectory Path dataDirectory) {
@@ -46,20 +46,20 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         AdventureHelper.init();
-        this.velocityFontDataBridge = new VelocityFontDataBridge(this);
-        this.velocityFontDataBridge.load();
+        this.velocityNetworkTagDataBridge = new VelocityNetworkTagDataBridge(this);
+        this.velocityNetworkTagDataBridge.load();
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
-        if (this.velocityFontDataBridge != null) {
-            this.velocityFontDataBridge.disable();
+        if (this.velocityNetworkTagDataBridge != null) {
+            this.velocityNetworkTagDataBridge.disable();
         }
         this.server.getEventManager().unregisterListeners(this);
     }
 
     @Override
-    public FontDataSyncService fontDataSyncService() {
-        return this.velocityFontDataBridge.fontDataSyncService();
+    public NetwrokTagDataSyncService networkTagDataSyncService() {
+        return this.velocityNetworkTagDataBridge.networkTagDataSyncService();
     }
 }

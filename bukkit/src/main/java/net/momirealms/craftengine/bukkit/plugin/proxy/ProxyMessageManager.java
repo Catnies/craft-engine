@@ -21,13 +21,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ProxyMessageManager implements Listener, PluginMessageListener {
-    private static final String FONT_DATA_IDENTIFIER = "craftengine:font_data";
+    private static final String TAG_DATA_IDENTIFIER = "craftengine:tag_data";
     private final BukkitCraftEngine plugin;
     private final boolean connectProxy;
-    private final Map<UUID, Set<Player>> proxyPlayers = new ConcurrentHashMap<>();
-    private final Map<Player, UUID> proxyByPlayer = new ConcurrentHashMap<>();
-    private long fontDataVersion = System.currentTimeMillis();
-    private FriendlyByteBuf fontDataBuf;
+    private final Map<UUID, Set<UUID>> proxyPlayers = new ConcurrentHashMap<>(); // ProxyUUID -> Set<PlayerUUID>
+    private final Map<UUID, UUID> proxyByPlayer = new ConcurrentHashMap<>(); // PlayerUUID -> ProxyUUID
+    private long networkTagDataVersion = System.currentTimeMillis();
+    private FriendlyByteBuf tagDataBuf;
 
     public ProxyMessageManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
@@ -38,12 +38,12 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     private void init() {
         if (connectProxy) {
             Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
-            Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(plugin.javaPlugin(), FONT_DATA_IDENTIFIER);
-            Bukkit.getServer().getMessenger().registerIncomingPluginChannel(plugin.javaPlugin(), FONT_DATA_IDENTIFIER, this);
+            Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(plugin.javaPlugin(), TAG_DATA_IDENTIFIER);
+            Bukkit.getServer().getMessenger().registerIncomingPluginChannel(plugin.javaPlugin(), TAG_DATA_IDENTIFIER, this);
         }
     }
 
-    private FriendlyByteBuf buildFontDataBuf() {
+    private FriendlyByteBuf buildTagDataBuf() {
         FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
         // Version
         byteBuf.writeLong(System.currentTimeMillis());
@@ -84,12 +84,12 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
         return byteBuf;
     }
 
-    public boolean sendFontData(Player player) {
+    public boolean sendTagData(Player player) {
         if (player.isConnected()) {
-            if (this.fontDataBuf == null) {
-                this.fontDataBuf = this.buildFontDataBuf();
+            if (this.tagDataBuf == null) {
+                this.tagDataBuf = this.buildTagDataBuf();
             }
-            player.sendPluginMessage(plugin.javaPlugin(), "craftengine:font_data", this.fontDataBuf.array());
+            player.sendPluginMessage(plugin.javaPlugin(), "craftengine:tag_data", this.tagDataBuf.array());
             return true;
         }
         return false;
@@ -98,35 +98,39 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     // 插件重载, 让每个玩家都刷新自身链接的代理服务器.
     @EventHandler
     public void onPluginReload(CraftEngineReloadEvent event) {
-        this.fontDataVersion = System.currentTimeMillis();
-        this.fontDataBuf = this.buildFontDataBuf();
+        this.networkTagDataVersion = System.currentTimeMillis();
+        this.tagDataBuf = this.buildTagDataBuf();
         this.proxyPlayers.values().forEach(set -> {
-            set.stream().findFirst().map(this::sendFontData);
+            set.stream()
+                    .findFirst()
+                    .map(Bukkit::getPlayer)
+                    .map(this::sendTagData);
         });
     }
 
     // 玩家离开服务器, 清理缓存数据
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        Optional.ofNullable(this.proxyByPlayer.remove(event.getPlayer()))
+        UUID playerUUID = event.getPlayer().getUniqueId();
+        Optional.ofNullable(this.proxyByPlayer.remove(playerUUID))
                 .map(this.proxyPlayers::get)
-                .map(it -> it.remove(event.getPlayer()));
+                .map(it -> it.remove(playerUUID));
     }
 
     // 当收到玩家进服后的数据版本号, 决定是否要重发包回去.
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (!channel.equals("craftengine:font_data")) return;
+        if (!channel.equals("craftengine:tag_data")) return;
         System.out.println(Bukkit.isPrimaryThread());
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(message));
         long dataVersion = buf.readLong();
         UUID proxyUUID = buf.readUUID();
         // 记录玩家所在的代理服务器.
-        proxyPlayers.computeIfAbsent(proxyUUID, it -> new HashSet<>()).add(player);
-        proxyByPlayer.put(player, proxyUUID);
+        proxyPlayers.computeIfAbsent(proxyUUID, it -> new HashSet<>()).add(player.getUniqueId());
+        proxyByPlayer.put(player.getUniqueId(), proxyUUID);
         // 更新字体数据.
-        if (dataVersion != this.fontDataVersion) {
-            this.sendFontData(player);
+        if (dataVersion != this.networkTagDataVersion) {
+            this.sendTagData(player);
         }
     }
 }
