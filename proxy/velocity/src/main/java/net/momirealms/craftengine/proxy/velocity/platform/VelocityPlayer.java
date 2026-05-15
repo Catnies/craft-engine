@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.proxy.velocity.platform;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
@@ -27,6 +28,7 @@ public class VelocityPlayer implements ProxyPlayer {
     @Override
     public BackendServer server() {
         return platform.getCurrentServer()
+                .map(ServerConnection::getServer)
                 .map(VelocityBackendServer::wrapper)
                 .orElse(null);
     }
