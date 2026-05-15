@@ -4,6 +4,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
 import net.momirealms.craftengine.proxy.bungeecord.font.BungeeFontDataBridge;
+import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 
 public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEngineProxyPlugin {
     public static CraftEngineBungeeCordPlugin INSTANCE;
@@ -12,6 +13,7 @@ public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEnginePr
     @Override
     public void onEnable() {
         INSTANCE = this;
+        AdventureHelper.init();
         this.bungeeFontDataBridge = new BungeeFontDataBridge(this);
         this.bungeeFontDataBridge.load();
     }

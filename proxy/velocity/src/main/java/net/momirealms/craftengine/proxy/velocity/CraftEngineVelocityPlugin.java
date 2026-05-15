@@ -11,6 +11,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.font.FontDataSyncService;
+import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import net.momirealms.craftengine.proxy.velocity.font.VelocityFontDataBridge;
 import org.slf4j.Logger;
 
@@ -44,6 +45,7 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
+        AdventureHelper.init();
         this.velocityFontDataBridge = new VelocityFontDataBridge(this);
         this.velocityFontDataBridge.load();
     }

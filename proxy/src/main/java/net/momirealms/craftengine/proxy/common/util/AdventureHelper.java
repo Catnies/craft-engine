@@ -7,6 +7,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
+import net.momirealms.sparrow.reflection.clazz.SparrowClass;
+import net.momirealms.sparrow.reflection.field.matcher.FieldMatcher;
 
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +30,8 @@ public final class AdventureHelper {
         this.miniMessageStrict = MiniMessage.builder().strict(true).build();
         this.miniMessageCustom = MiniMessage.builder().tags(TagResolver.empty()).build();
     }
+
+    public static void init() {}
 
     public static Component replaceText(Component text, Map<String, ComponentProvider> replacements, Context context) {
         int size = replacements.size();
