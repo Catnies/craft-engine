@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Optional;
 
-public final class NetworkTextReplaceContext<P> implements Context {
+public final class NetworkTextReplaceContext implements Context {
     public final ContextKey<ProxyPlayer> PLAYER = ContextKey.direct("proxy_player");
     private final ContextHolder contexts;
     private final ProxyPlayer player;

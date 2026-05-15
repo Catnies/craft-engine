@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Locale;
 
 public final class NetworkL10NTag implements TagResolver {
-    private final NetworkTextReplaceContext<?> context;
+    private final NetworkTextReplaceContext context;
 
-    public NetworkL10NTag(NetworkTextReplaceContext<?> context) {
+    public NetworkL10NTag(NetworkTextReplaceContext context) {
         this.context = context;
     }
 

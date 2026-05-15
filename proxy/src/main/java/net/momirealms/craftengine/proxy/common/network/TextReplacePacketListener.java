@@ -63,7 +63,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens2 = fontData.matchNetworkTags(footerJson);
         if (tokens1.isEmpty() && tokens2.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         if (!tokens1.isEmpty()) headerComponent = AdventureHelper.replaceText(headerComponent, tokens1, context);
         if (!tokens2.isEmpty()) footerComponent = AdventureHelper.replaceText(footerComponent, tokens2, context);
 
@@ -94,7 +94,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens3 = fontData.matchNetworkTags(suffixJson);
         if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         if (!tokens1.isEmpty()) displayNameComponent = AdventureHelper.replaceText(displayNameComponent, tokens1, context);
         if (!tokens2.isEmpty()) prefixComponent = AdventureHelper.replaceText(prefixComponent, tokens2, context);
         if (!tokens2.isEmpty()) suffixComponent = AdventureHelper.replaceText(suffixComponent, tokens2, context);
@@ -121,7 +121,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(titleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         titleComponent = AdventureHelper.replaceText(titleComponent, tokens, context);
 
         wrapper.setTitle(titleComponent);
@@ -144,7 +144,7 @@ public class TextReplacePacketListener implements PacketListener {
             Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(titleJson);
             if (tokens.isEmpty()) return;
 
-            NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+            NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
             wrapper.setTitle(AdventureHelper.replaceText(titleComponent, tokens, context));
         } else if (wrapper.getAction() == WrapperPlayServerTitle.TitleAction.SET_SUBTITLE) {
             Component subtitleComponent = wrapper.getSubtitle();
@@ -154,7 +154,7 @@ public class TextReplacePacketListener implements PacketListener {
             Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
             if (tokens.isEmpty()) return;
 
-            NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+            NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
             wrapper.setSubtitle(AdventureHelper.replaceText(subtitleComponent, tokens, context));
         }
     }
@@ -174,7 +174,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(titleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         wrapper.setTitle(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -193,7 +193,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         wrapper.setSubtitle(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -212,7 +212,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         wrapper.setActionBarText(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -231,7 +231,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         wrapper.setMessage(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -251,7 +251,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(json);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         wrapper.setEntityDisplayName(AdventureHelper.replaceText(component, tokens, context));
     }
 
@@ -272,7 +272,7 @@ public class TextReplacePacketListener implements PacketListener {
         Map<String, ComponentProvider> tokens = fontData.matchNetworkTags(subtitleJson);
         if (tokens.isEmpty()) return;
 
-        NetworkTextReplaceContext<ProxyPlayer> context = new NetworkTextReplaceContext<>(player, fontData);
+        NetworkTextReplaceContext context = new NetworkTextReplaceContext(player, fontData);
         wrapper.setDisplayName(AdventureHelper.replaceText(component, tokens, context));
     }
 }
