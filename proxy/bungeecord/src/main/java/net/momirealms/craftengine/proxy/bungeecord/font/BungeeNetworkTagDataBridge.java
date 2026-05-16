@@ -15,27 +15,27 @@ import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
-import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.network.TextReplacePacketListener;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public class BungeeNetworkTagDataBridge implements Manageable, Listener {
-    public static final String IDENTIFIER = NetwrokTagDataSyncService.TAG_DATA_CHANNEL;
+    public static final String IDENTIFIER = NetworkTagDataSyncService.TAG_DATA_CHANNEL;
 
     private final CraftEngineBungeeCordPlugin plugin;
-    private final NetwrokTagDataSyncService netwrokTagDataSyncService;
+    private final NetworkTagDataSyncService networkTagDataSyncService;
     private final TextReplacePacketListener textReplacePacketListener;
     private PacketListenerCommon registeredPacketListener;
 
     public BungeeNetworkTagDataBridge(CraftEngineBungeeCordPlugin plugin) {
         this.plugin = plugin;
-        this.netwrokTagDataSyncService = new NetwrokTagDataSyncService();
-        this.textReplacePacketListener = new TextReplacePacketListener(this.netwrokTagDataSyncService, this::wrapPlayer);
+        this.networkTagDataSyncService = new NetworkTagDataSyncService();
+        this.textReplacePacketListener = new TextReplacePacketListener(this.networkTagDataSyncService, this::wrapPlayer);
     }
 
-    public NetwrokTagDataSyncService networkTagDataSyncService() {
-        return this.netwrokTagDataSyncService;
+    public NetworkTagDataSyncService networkTagDataSyncService() {
+        return this.networkTagDataSyncService;
     }
 
     @Override
@@ -52,12 +52,12 @@ public class BungeeNetworkTagDataBridge implements Manageable, Listener {
         if (this.registeredPacketListener != null) {
             PacketEvents.getAPI().getEventManager().unregisterListener(this.registeredPacketListener);
         }
-        this.netwrokTagDataSyncService.clear();
+        this.networkTagDataSyncService.clear();
     }
 
     @EventHandler
     public void onServerConnected(ServerConnectedEvent event) {
-        this.netwrokTagDataSyncService.sendTagDataVersion(BungeePlayer.wrapper(event.getPlayer()));
+        this.networkTagDataSyncService.sendTagDataVersion(BungeePlayer.wrapper(event.getPlayer()));
     }
 
     @EventHandler
@@ -69,7 +69,7 @@ public class BungeeNetworkTagDataBridge implements Manageable, Listener {
         ByteBuf buffer = Unpooled.buffer(event.getData().length);
         buffer.writeBytes(event.getData());
         FriendlyByteBuf in = new FriendlyByteBuf(buffer);
-        this.netwrokTagDataSyncService.receiveTagData(server.getInfo().getName(), in);
+        this.networkTagDataSyncService.receiveTagData(server.getInfo().getName(), in);
     }
 
     @Nullable

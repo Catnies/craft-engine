@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
-import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.network.TextReplacePacketListener;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
@@ -21,21 +21,21 @@ import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public class VelocityNetworkTagDataBridge implements Manageable {
-    public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetwrokTagDataSyncService.TAG_DATA_CHANNEL);
+    public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetworkTagDataSyncService.TAG_DATA_CHANNEL);
 
     private final CraftEngineVelocityPlugin plugin;
-    private final NetwrokTagDataSyncService netwrokTagDataSyncService;
+    private final NetworkTagDataSyncService networkTagDataSyncService;
     private final TextReplacePacketListener textReplacePacketListener;
     private PacketListenerCommon registeredPacketListener;
 
     public VelocityNetworkTagDataBridge(CraftEngineVelocityPlugin plugin) {
         this.plugin = plugin;
-        this.netwrokTagDataSyncService = new NetwrokTagDataSyncService();
-        this.textReplacePacketListener = new TextReplacePacketListener(this.netwrokTagDataSyncService, this::wrapPlayer);
+        this.networkTagDataSyncService = new NetworkTagDataSyncService();
+        this.textReplacePacketListener = new TextReplacePacketListener(this.networkTagDataSyncService, this::wrapPlayer);
     }
 
-    public NetwrokTagDataSyncService networkTagDataSyncService() {
-        return this.netwrokTagDataSyncService;
+    public NetworkTagDataSyncService networkTagDataSyncService() {
+        return this.networkTagDataSyncService;
     }
 
     @Override
@@ -52,12 +52,12 @@ public class VelocityNetworkTagDataBridge implements Manageable {
         if (this.registeredPacketListener != null) {
             PacketEvents.getAPI().getEventManager().unregisterListener(this.registeredPacketListener);
         }
-        this.netwrokTagDataSyncService.clear();
+        this.networkTagDataSyncService.clear();
     }
 
     @Subscribe
     public void onPlayerConnected(ServerPostConnectEvent event) {
-        this.netwrokTagDataSyncService.sendTagDataVersion(VelocityPlayer.wrapper(event.getPlayer()));
+        this.networkTagDataSyncService.sendTagDataVersion(VelocityPlayer.wrapper(event.getPlayer()));
     }
 
     @Subscribe
@@ -73,7 +73,7 @@ public class VelocityNetworkTagDataBridge implements Manageable {
                 : null;
         if (serverName == null) return;
 
-        this.netwrokTagDataSyncService.receiveTagData(serverName, in);
+        this.networkTagDataSyncService.receiveTagData(serverName, in);
     }
 
     @Nullable

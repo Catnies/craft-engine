@@ -31,6 +31,11 @@ public final class AdventureHelper {
         this.miniMessageCustom = MiniMessage.builder().tags(TagResolver.empty()).build();
     }
 
+    static {
+        SparrowClass.of(SparrowClass.findNoRemap("net.kyori.adventure.text.TextComponentImpl")).getDeclaredSparrowField(FieldMatcher.named("WARN_WHEN_LEGACY_FORMATTING_DETECTED")).mh().set(null, false);
+        SparrowClass.of(SparrowClass.findNoRemap("net{}kyori{}adventure{}text{}TextComponentImpl".replace("{}", "."))).getDeclaredSparrowField(FieldMatcher.named("WARN_WHEN_LEGACY_FORMATTING_DETECTED")).mh().set(null, false);
+    }
+
     public static void init() {}
 
     public static Component replaceText(Component text, Map<String, ComponentProvider> replacements, Context context) {

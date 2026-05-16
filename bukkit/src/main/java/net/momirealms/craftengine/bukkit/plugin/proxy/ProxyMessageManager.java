@@ -121,7 +121,6 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
         if (!channel.equals("craftengine:tag_data")) return;
-        System.out.println(Bukkit.isPrimaryThread());
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(message));
         long dataVersion = buf.readLong();
         UUID proxyUUID = buf.readUUID();

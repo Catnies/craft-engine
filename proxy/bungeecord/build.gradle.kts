@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":proxy"))
     // Platform
     compileOnly("net.md-5:bungeecord-api:${rootProject.properties["bungeecord_version"]}")
-    compileOnly("com.github.retrooper:packetevents-bungeecord:${rootProject.properties["packet_events_version"]}")
+    implementation("com.github.retrooper:packetevents-bungeecord:${rootProject.properties["packet_events_version"]}")
 }
 
 tasks {
@@ -25,7 +25,7 @@ tasks {
     }
 
     shadowJar {
-        relocation.applyVelocity(this)
+        relocation.applyProxy(this)
         archiveFileName = "${rootProject.name}-bungeecord-plugin-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
     }

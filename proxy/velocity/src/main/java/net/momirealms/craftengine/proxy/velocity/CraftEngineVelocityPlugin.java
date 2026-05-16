@@ -1,16 +1,17 @@
 package net.momirealms.craftengine.proxy.velocity;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
-import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import io.github.retrooper.packetevents.velocity.factory.VelocityPacketEventsBuilder;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
-import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import net.momirealms.craftengine.proxy.velocity.font.VelocityNetworkTagDataBridge;
 import org.slf4j.Logger;
@@ -21,10 +22,7 @@ import java.nio.file.Path;
         id = "craftengine",
         name = "CraftEngine",
         version = "1.0.0-SNAPSHOT",
-        authors = {"Catnies"},
-        dependencies = {
-                @Dependency(id = "packetevents")
-        }
+        authors = {"Catnies"}
 )
 public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
     public static CraftEngineVelocityPlugin INSTANCE;
@@ -45,9 +43,12 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
+        PacketEvents.setAPI(VelocityPacketEventsBuilder.build(this.server, this.pluginContainer, this.logger, this.dataDirectory));
+        PacketEvents.getAPI().load();
         AdventureHelper.init();
         this.velocityNetworkTagDataBridge = new VelocityNetworkTagDataBridge(this);
         this.velocityNetworkTagDataBridge.load();
+        PacketEvents.getAPI().init();
     }
 
     @Subscribe
@@ -59,7 +60,7 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
     }
 
     @Override
-    public NetwrokTagDataSyncService networkTagDataSyncService() {
+    public NetworkTagDataSyncService networkTagDataSyncService() {
         return this.velocityNetworkTagDataBridge.networkTagDataSyncService();
     }
 }

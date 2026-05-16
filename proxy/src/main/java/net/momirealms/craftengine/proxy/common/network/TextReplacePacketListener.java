@@ -9,7 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
 import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
-import net.momirealms.craftengine.proxy.common.font.NetwrokTagDataSyncService;
+import net.momirealms.craftengine.proxy.common.font.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class TextReplacePacketListener implements PacketListener {
-    private final NetwrokTagDataSyncService netwrokTagDataSyncService;
+    private final NetworkTagDataSyncService networkTagDataSyncService;
     private final Function<Object, @Nullable ProxyPlayer> playerWrapper;
 
-    public TextReplacePacketListener(NetwrokTagDataSyncService netwrokTagDataSyncService, Function<Object, @Nullable ProxyPlayer> playerWrapper) {
-        this.netwrokTagDataSyncService = netwrokTagDataSyncService;
+    public TextReplacePacketListener(NetworkTagDataSyncService networkTagDataSyncService, Function<Object, @Nullable ProxyPlayer> playerWrapper) {
+        this.networkTagDataSyncService = networkTagDataSyncService;
         this.playerWrapper = playerWrapper;
     }
 
@@ -51,7 +51,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerPlayerListHeaderAndFooter wrapper = new WrapperPlayServerPlayerListHeaderAndFooter(event);
@@ -76,7 +76,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerTeams wrapper = new WrapperPlayServerTeams(event);
@@ -108,7 +108,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerBossBar wrapper = new WrapperPlayServerBossBar(event);
@@ -132,7 +132,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerTitle wrapper = new WrapperPlayServerTitle(event);
@@ -164,7 +164,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerSetTitleText wrapper = new WrapperPlayServerSetTitleText(event);
@@ -183,7 +183,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerSetTitleSubtitle wrapper = new WrapperPlayServerSetTitleSubtitle(event);
@@ -202,7 +202,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerActionBar wrapper = new WrapperPlayServerActionBar(event);
@@ -221,7 +221,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerSystemChatMessage wrapper = new WrapperPlayServerSystemChatMessage(event);
@@ -240,7 +240,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerUpdateScore wrapper = new WrapperPlayServerUpdateScore(event);
@@ -260,7 +260,7 @@ public class TextReplacePacketListener implements PacketListener {
         // 检查是否存在玩家当前服务器的数据
         ProxyPlayer player = this.playerWrapper.apply(event.getPlayer());
         if (player == null) return;
-        NetworkTagData netWorkTagData = this.netwrokTagDataSyncService.getTagDataForPlayer(player);
+        NetworkTagData netWorkTagData = this.networkTagDataSyncService.getTagDataForPlayer(player);
         if (netWorkTagData == null) return;
 
         WrapperPlayServerScoreboardObjective wrapper = new WrapperPlayServerScoreboardObjective(event);

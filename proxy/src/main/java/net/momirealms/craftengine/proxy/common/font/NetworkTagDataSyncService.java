@@ -7,14 +7,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public final class NetwrokTagDataSyncService {
+public final class NetworkTagDataSyncService {
     public static final String TAG_DATA_CHANNEL = "craftengine:tag_data";
     public static final UUID PROXY_UUID = UUID.randomUUID();
 
     private final NetworkTagDataRegistry registry;
     private final NetworkTagDataCodec codec;
 
-    public NetwrokTagDataSyncService() {
+    public NetworkTagDataSyncService() {
         this.registry = new NetworkTagDataRegistry();
         this.codec = new NetworkTagDataCodec(this.registry);
     }

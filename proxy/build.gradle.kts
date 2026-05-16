@@ -1,5 +1,7 @@
+import net.momirealms.adventure
 import net.momirealms.nbt
 import net.momirealms.netty
+import org.gradle.kotlin.dsl.exclude
 
 repositories {
     mavenCentral()
@@ -23,11 +25,11 @@ dependencies {
     implementation("it.unimi.dsi:fastutil:${rootProject.properties["fastutil_version"]}")
     implementation("com.github.ben-manes.caffeine:caffeine:${rootProject.properties["caffeine_version"]}")
     // Adventure
-    compileOnly("net.kyori:adventure-api:4.17.0")
-    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
-    compileOnly("net.kyori:adventure-text-serializer-json-legacy-impl:4.17.0")
-    compileOnly("net.kyori:adventure-text-serializer-legacy:4.17.0")
-    compileOnly("net.kyori:adventure-text-serializer-gson:4.17.0").apply {
+    implementation("net.kyori:adventure-api:4.26.1")
+    implementation("net.kyori:adventure-text-minimessage:4.26.1")
+    implementation("net.kyori:adventure-text-serializer-json-legacy-impl:4.26.1")
+    implementation("net.kyori:adventure-text-serializer-legacy:4.26.1")
+    implementation("net.kyori:adventure-text-serializer-gson:4.26.1").apply {
         (this as? ExternalModuleDependency)?.exclude("com.google.code.gson", "gson")
     }
     // Packet

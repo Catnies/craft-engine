@@ -19,7 +19,7 @@ dependencies {
     // Platform
     compileOnly("com.velocitypowered:velocity-api:${rootProject.properties["velocity_version"]}-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:${rootProject.properties["velocity_version"]}-SNAPSHOT")
-    compileOnly("com.github.retrooper:packetevents-velocity:${rootProject.properties["packet_events_version"]}")
+    implementation("com.github.retrooper:packetevents-velocity:${rootProject.properties["packet_events_version"]}")
 }
 
 tasks {
@@ -28,7 +28,7 @@ tasks {
     }
 
     shadowJar {
-        relocation.applyVelocity(this)
+        relocation.applyProxy(this)
         archiveFileName = "${rootProject.name}-velocity-plugin-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
     }
