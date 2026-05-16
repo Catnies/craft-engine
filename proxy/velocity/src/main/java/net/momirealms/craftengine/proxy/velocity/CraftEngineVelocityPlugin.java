@@ -16,6 +16,7 @@ import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import net.momirealms.craftengine.proxy.velocity.font.VelocityNetworkTagDataBridge;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.nio.file.Path;
 
 @Plugin(
@@ -57,6 +58,16 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
             this.velocityNetworkTagDataBridge.disable();
         }
         this.server.getEventManager().unregisterListeners(this);
+    }
+
+    @Override
+    public File dataFolderFile() {
+        return this.dataDirectory.toFile();
+    }
+
+    @Override
+    public Path dataFolderPath() {
+        return this.dataDirectory;
     }
 
     @Override

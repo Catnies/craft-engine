@@ -6,6 +6,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Image;
 import net.momirealms.craftengine.core.font.ReferenceImage;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
@@ -32,11 +33,7 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     public ProxyMessageManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
         this.connectProxy = Bukkit.getServer().getServerConfig().isProxyEnabled();
-        this.init();
-    }
-
-    private void init() {
-        if (connectProxy) {
+        if (connectProxy && Config.enableNetworkTagDataProxy()) {
             Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
             Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(plugin.javaPlugin(), TAG_DATA_IDENTIFIER);
             Bukkit.getServer().getMessenger().registerIncomingPluginChannel(plugin.javaPlugin(), TAG_DATA_IDENTIFIER, this);
@@ -45,6 +42,8 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
 
     private FriendlyByteBuf buildTagDataBuf() {
         FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
+        // Secret
+        byteBuf.writeUtf(Config.networkTagDataSecret());
         // Version
         byteBuf.writeLong(System.currentTimeMillis());
         // OffsetFont
@@ -85,7 +84,7 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     }
 
     public boolean sendTagData(Player player) {
-        if (player.isConnected()) {
+        if (player.isConnected() && !Config.networkTagDataSecret().isEmpty()) {
             if (this.tagDataBuf == null) {
                 this.tagDataBuf = this.buildTagDataBuf();
             }
@@ -98,6 +97,8 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     // 插件重载, 让每个玩家都刷新自身链接的代理服务器.
     @EventHandler
     public void onPluginReload(CraftEngineReloadEvent event) {
+        if (Config.networkTagDataSecret().isEmpty()) return;
+
         this.networkTagDataVersion = System.currentTimeMillis();
         this.tagDataBuf = this.buildTagDataBuf();
         this.proxyPlayers.values().forEach(set -> {
@@ -120,16 +121,23 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
     // 当收到玩家进服后的数据版本号, 决定是否要重发包回去.
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (!channel.equals("craftengine:tag_data")) return;
+        String serverSecret = Config.networkTagDataSecret();
+        if (!channel.equals("craftengine:tag_data") || serverSecret.isEmpty()) {
+            return;
+        }
+
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(message));
-        long dataVersion = buf.readLong();
-        UUID proxyUUID = buf.readUUID();
-        // 记录玩家所在的代理服务器.
-        proxyPlayers.computeIfAbsent(proxyUUID, it -> new HashSet<>()).add(player.getUniqueId());
-        proxyByPlayer.put(player.getUniqueId(), proxyUUID);
-        // 更新字体数据.
-        if (dataVersion != this.networkTagDataVersion) {
-            this.sendTagData(player);
+        String readSecret = buf.readUtf();
+        if (serverSecret.equals(readSecret)) {
+            long dataVersion = buf.readLong();
+            UUID proxyUUID = buf.readUUID();
+            // 记录玩家所在的代理服务器.
+            proxyPlayers.computeIfAbsent(proxyUUID, it -> new HashSet<>()).add(player.getUniqueId());
+            proxyByPlayer.put(player.getUniqueId(), proxyUUID);
+            // 更新字体数据.
+            if (dataVersion != this.networkTagDataVersion) {
+                this.sendTagData(player);
+            }
         }
     }
 }

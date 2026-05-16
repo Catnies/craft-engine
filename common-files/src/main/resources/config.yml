@@ -523,6 +523,11 @@ network:
     algorithm: xor # xor/aes-gcm/chacha20
     key: ""  # empty = random key
 
+  # TODO
+  proxy:
+    enable: true
+    secret: ""
+
 recipe:
   # Master switch for custom recipes
   enable: true

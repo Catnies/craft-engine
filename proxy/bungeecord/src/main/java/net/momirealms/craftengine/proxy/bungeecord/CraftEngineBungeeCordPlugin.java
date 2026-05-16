@@ -8,6 +8,9 @@ import net.momirealms.craftengine.proxy.common.font.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.bungeecord.font.BungeeNetworkTagDataBridge;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 
+import java.io.File;
+import java.nio.file.Path;
+
 public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEngineProxyPlugin {
     public static CraftEngineBungeeCordPlugin INSTANCE;
     private BungeeNetworkTagDataBridge bungeeNetworkTagDataBridge;
@@ -28,6 +31,16 @@ public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEnginePr
         if (this.bungeeNetworkTagDataBridge != null) {
             this.bungeeNetworkTagDataBridge.disable();
         }
+    }
+
+    @Override
+    public File dataFolderFile() {
+        return this.getDataFolder();
+    }
+
+    @Override
+    public Path dataFolderPath() {
+        return this.getDataFolder().toPath();
     }
 
     @Override

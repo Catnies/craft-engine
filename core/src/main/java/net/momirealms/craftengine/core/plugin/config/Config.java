@@ -224,6 +224,8 @@ public final class Config {
     private boolean network$mod_channel$enable;
     private boolean network$mod_channel$requires_permission;
     private boolean network$item_crypto$enable;
+    private boolean network$proxy_enable;
+    private String network$proxy_secret;
 
     private boolean item$client_bound_model;
     private boolean item$non_italic_tag;
@@ -711,6 +713,8 @@ public final class Config {
                 });
             }
         }
+        this.network$proxy_enable = config.getBoolean("network.proxy.enable", true);
+        this.network$proxy_secret = config.getString("network.proxy.secret", "");
 
         // emoji
         this.emoji$contexts$chat = config.getBoolean("emoji.contexts.chat", true);
@@ -1174,6 +1178,14 @@ public final class Config {
 
     public static boolean enableItemCrypto() {
         return instance.network$item_crypto$enable;
+    }
+
+    public static boolean enableNetworkTagDataProxy() {
+        return instance.network$proxy_enable;
+    }
+
+    public static String networkTagDataSecret() {
+        return instance.network$proxy_secret;
     }
 
     public static boolean disableItemOperations() {

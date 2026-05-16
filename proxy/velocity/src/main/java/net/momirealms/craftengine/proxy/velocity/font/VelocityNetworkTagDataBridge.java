@@ -30,7 +30,7 @@ public class VelocityNetworkTagDataBridge implements Manageable {
 
     public VelocityNetworkTagDataBridge(CraftEngineVelocityPlugin plugin) {
         this.plugin = plugin;
-        this.networkTagDataSyncService = new NetworkTagDataSyncService();
+        this.networkTagDataSyncService = new NetworkTagDataSyncService(plugin);
         this.textReplacePacketListener = new TextReplacePacketListener(this.networkTagDataSyncService, this::wrapPlayer);
     }
 

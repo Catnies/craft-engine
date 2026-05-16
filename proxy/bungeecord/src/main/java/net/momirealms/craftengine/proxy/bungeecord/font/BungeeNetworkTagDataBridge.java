@@ -30,7 +30,7 @@ public class BungeeNetworkTagDataBridge implements Manageable, Listener {
 
     public BungeeNetworkTagDataBridge(CraftEngineBungeeCordPlugin plugin) {
         this.plugin = plugin;
-        this.networkTagDataSyncService = new NetworkTagDataSyncService();
+        this.networkTagDataSyncService = new NetworkTagDataSyncService(plugin);
         this.textReplacePacketListener = new TextReplacePacketListener(this.networkTagDataSyncService, this::wrapPlayer);
     }
 
