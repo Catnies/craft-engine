@@ -40,7 +40,6 @@ open class RelocationExtension {
         with(task) {
             val libs = "net.momirealms.craftengine.libraries"
             relocate("net.kyori", libs)
-            relocate("dev.dejvokep", libs)
             relocate("it.unimi.dsi.fastutil", "$libs.fastutil")
             relocate("com.github.benmanes.caffeine", "$libs.caffeine")
             relocate("net.momirealms.sparrow.reflection", "$libs.reflection")
