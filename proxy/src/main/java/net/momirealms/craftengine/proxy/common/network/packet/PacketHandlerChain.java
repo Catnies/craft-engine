@@ -1,10 +1,9 @@
 package net.momirealms.craftengine.proxy.common.network.packet;
 
+import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
 
 public class PacketHandlerChain {
     private volatile PacketHandler[] handlers = new PacketHandler[0];
@@ -19,10 +18,7 @@ public class PacketHandlerChain {
     }
 
     public synchronized void add(PacketHandler handler) {
-        PacketHandler[] current = this.handlers;
-        PacketHandler[] updated = Arrays.copyOf(current, current.length + 1);
-        updated[current.length] = handler;
-        this.handlers = updated;
+        this.handlers = ArrayUtils.appendElementToArrayTail(this.handlers, handler);
     }
 
     public synchronized void remove(PacketHandler handler) {
