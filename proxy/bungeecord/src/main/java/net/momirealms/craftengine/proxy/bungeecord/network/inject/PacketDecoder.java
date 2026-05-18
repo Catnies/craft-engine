@@ -28,7 +28,7 @@ final class PacketDecoder extends MessageToMessageDecoder<ByteBuf> {
     @Override
     protected void decode(ChannelHandlerContext context, ByteBuf message, List<Object> output) {
         // packetSink 可能返回原始 buffer、替换 buffer 或空 buffer 来取消 packet
-        ByteBuf result = this.packetSink.handle(this.connection, PacketSide.CLIENT, message);
+        ByteBuf result = this.packetSink.handle(this.connection.connection(), this.connection.player(), PacketSide.CLIENT, message);
         if (!result.isReadable()) {
             if (result != message) {
                 ReferenceCountUtil.release(result);

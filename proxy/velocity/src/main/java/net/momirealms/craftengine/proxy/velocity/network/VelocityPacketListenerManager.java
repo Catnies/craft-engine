@@ -33,7 +33,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         this.errorHandler = this::handlePacketError;
         this.pipelineInjector = new PacketPipelineInjector(
                 plugin,
-                this::handlePacket,
+                this::handle,
                 this::addConnection,
                 this::removeConnection
         );
@@ -129,10 +129,6 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
     @Override
     public CraftEngineProxyPlugin plugin() {
         return this.plugin;
-    }
-
-    private ByteBuf handlePacket(ChannelConnection context, PacketSide side, ByteBuf buffer) {
-        return this.handle(context.connection(), context.player(), side, buffer);
     }
 
     private void handlePacketError(int packetId, PacketSide side, Throwable throwable) {
