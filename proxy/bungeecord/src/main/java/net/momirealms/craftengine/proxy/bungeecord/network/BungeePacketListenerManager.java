@@ -1,25 +1,43 @@
 package net.momirealms.craftengine.proxy.bungeecord.network;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.plugin.Listener;
+import net.md_5.bungee.event.EventHandler;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
+import net.momirealms.craftengine.proxy.bungeecord.network.inject.BungeePacketPipelineInjector;
+import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketRegistration;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.net.SocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class BungeePacketListenerManager extends PacketListenerManager {
+public class BungeePacketListenerManager extends PacketListenerManager implements Listener {
     private final CraftEngineBungeeCordPlugin plugin;
+    private final BungeePacketPipelineInjector pipelineInjector; // 负责 Bungee Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
-    private final List<PacketRegistration> internalRegistrations = new ArrayList<>(); // 内部协议状态监听
+    private final ConcurrentMap<Channel, BungeeChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
+    private final ConcurrentMap<SocketAddress, BungeeChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
     private volatile boolean loaded;
 
     public BungeePacketListenerManager(CraftEngineBungeeCordPlugin plugin) {
         super();
         this.plugin = plugin;
         this.errorHandler = this::handlePacketError;
+        this.pipelineInjector = new BungeePacketPipelineInjector(
+                plugin,
+                this::handlePacket,
+                this::addConnection,
+                this::removeConnection
+        );
         this.load();
     }
 
@@ -36,12 +54,72 @@ public class BungeePacketListenerManager extends PacketListenerManager {
         // 注册常规监听器
         this.registerPacketListeners();
         // 注册玩家监听器, 注入管道, 接入 Netty 流量
-//        this.plugin.server.getEventManager().register(this.plugin, this);
-//        this.pipelineInjector.inject();
+        ProxyServer.getInstance().getPluginManager().registerListener(this.plugin, this);
+        this.pipelineInjector.inject();
     }
 
-    private void handlePacketError(int packetId, PacketSide side, Throwable throwable) {
-        this.plugin.getLogger().warning("An error occurred when handling Velocity packet " + packetId + " (" + side + ")");
+    @Override
+    public void disable() {
+        if (!this.loaded) {
+            return;
+        }
+        this.loaded = false;
+        ProxyServer.getInstance().getPluginManager().unregisterListener(this);
+
+        // 解除内部监听, 避免 disable 后继续修改连接状态
+        for (PacketRegistration registration : this.internalRegistrations) {
+            registration.unregister();
+        }
+        this.internalRegistrations.clear();
+        this.pipelineInjector.uninject();
+
+        // 已经建立的 Channel 不会重新经过 initializer, 需要主动移除 handler
+        for (BungeeChannelConnection connection : this.connectionsByChannel.values()) {
+            Channel channel = connection.channel();
+            if (channel.isOpen()) {
+                channel.eventLoop().execute(() -> BungeePacketPipelineInjector.removeHandlers(channel));
+            }
+        }
+        this.connectionsByChannel.clear();
+        this.connectionsByAddress.clear();
+    }
+
+    @EventHandler
+    public void onPostLogin(PostLoginEvent event) {
+        // Netty channel 早于 Bungee player 创建, 登录后再绑定玩家对象
+        BungeeChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getSocketAddress());
+        if (connection == null) {
+            return;
+        }
+        BungeePlayer player = BungeePlayer.wrapper(event.getPlayer());
+        connection.bind(player);
+    }
+
+    @EventHandler
+    public void onDisconnect(PlayerDisconnectEvent event) {
+        // 保留连接对象到 Channel 关闭, 这里只解除玩家引用
+        BungeeChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getSocketAddress());
+        if (connection != null) {
+            connection.unbind(event.getPlayer().getUniqueId());
+        }
+    }
+
+    private void addConnection(BungeeChannelConnection connection) {
+        Channel channel = connection.channel();
+        this.connectionsByChannel.put(channel, connection);
+        SocketAddress remoteAddress = channel.remoteAddress();
+        if (remoteAddress != null) {
+            this.connectionsByAddress.put(remoteAddress, connection);
+        }
+    }
+
+    private void removeConnection(BungeeChannelConnection connection) {
+        Channel channel = connection.channel();
+        this.connectionsByChannel.remove(channel);
+        SocketAddress remoteAddress = channel.remoteAddress();
+        if (remoteAddress != null) {
+            this.connectionsByAddress.remove(remoteAddress, connection);
+        }
     }
 
     @Override
@@ -54,4 +132,11 @@ public class BungeePacketListenerManager extends PacketListenerManager {
         return this.plugin;
     }
 
+    private ByteBuf handlePacket(BungeeChannelConnection context, PacketSide side, ByteBuf buffer) {
+        return this.handle(context.connection(), context.player(), side, buffer);
+    }
+
+    private void handlePacketError(int packetId, PacketSide side, Throwable throwable) {
+        this.plugin.getLogger().warning("An error occurred when handling bungee packet " + packetId + " (" + side + ")");
+    }
 }
