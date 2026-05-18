@@ -38,8 +38,13 @@ public final class AdventureHelper {
     private final LegacyComponentSerializer legacyComponentSerializer;
 
     static {
+        // Shadow
         SparrowClass.of(SparrowClass.findNoRemap("net.kyori.adventure.text.TextComponentImpl")).getDeclaredSparrowField(FieldMatcher.named("WARN_WHEN_LEGACY_FORMATTING_DETECTED")).mh().set(null, false);
-        SparrowClass.of(SparrowClass.findNoRemap("net{}kyori{}adventure{}text{}TextComponentImpl".replace("{}", "."))).getDeclaredSparrowField(FieldMatcher.named("WARN_WHEN_LEGACY_FORMATTING_DETECTED")).mh().set(null, false);
+        // Velocity
+        Class<?> textComponentImplClass = SparrowClass.findNoRemap("net{}kyori{}adventure{}text{}TextComponentImpl".replace("{}", "."));
+        if (textComponentImplClass != null) {
+            SparrowClass.of(textComponentImplClass).getDeclaredSparrowField(FieldMatcher.named("WARN_WHEN_LEGACY_FORMATTING_DETECTED")).mh().set(null, false);
+        }
     }
 
     private AdventureHelper() {
