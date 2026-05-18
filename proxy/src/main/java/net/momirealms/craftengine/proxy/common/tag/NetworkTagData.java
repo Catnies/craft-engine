@@ -3,6 +3,7 @@ package net.momirealms.craftengine.proxy.common.tag;
 import net.kyori.adventure.text.minimessage.internal.parser.Token;
 import net.kyori.adventure.text.minimessage.internal.parser.TokenParser;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Image;
 import net.momirealms.craftengine.core.font.OffsetFont;
 import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
@@ -60,7 +61,35 @@ public class NetworkTagData {
                 new GlobalVariableTag(this)
         };
         this.networkTagMapper = MiscUtils.init(new HashMap<>(), it -> {
-            // TODO 缓存
+            for (int i = -256; i <= 256; i++) {
+                it.put(shiftTag(i), ComponentProvider.constant(NetworkTagData.this.offset.createOffset(i)));
+            }
+            for (String key : this.l10n.keySet()) {
+                it.put(l10nTag(key), ComponentProvider.l10n(key));
+            }
+            for (Map.Entry<String, String> entry : this.globalVariables.entrySet()) {
+                String globalTag = globalTag(entry.getKey());
+                it.put(globalTag, ComponentProvider.miniMessageOrConstant(entry.getValue()));
+            }
+            for (Image image : this.images.values()) {
+                Key key = image.id();
+                String id = key.toString();
+                String simpleImageTag = imageTag(id);
+                it.put(simpleImageTag, ComponentProvider.constant(image.componentAt(0, 0)));
+                String simplerImageTag = imageTag(key.value());
+                it.put(simplerImageTag, ComponentProvider.constant(image.componentAt(0, 0)));
+                if (image instanceof BitmapImage bitmapImage) {
+                    for (int i = 0; i < bitmapImage.rows(); i++) {
+                        String partialArgs = id + ":" + i;
+                        it.put(imageTag(partialArgs), ComponentProvider.constant(image.componentAt(i, 0)));
+                        for (int j = 0; j < bitmapImage.columns(); j++) {
+                            String imageArgs = id + ":" + i + ":" + j;
+                            String imageTag = imageTag(imageArgs);
+                            it.put(imageTag, ComponentProvider.constant(image.componentAt(i, j)));
+                        }
+                    }
+                }
+            }
         });
     }
 
@@ -155,5 +184,21 @@ public class NetworkTagData {
 
     public TagResolver[] tagResolvers() {
         return this.tagResolvers;
+    }
+
+    private static String imageTag(String text) {
+        return "<image:" + text + ">";
+    }
+
+    private static String globalTag(String text) {
+        return "<global:" + text + ">";
+    }
+
+    private static String l10nTag(String text) {
+        return "<l10n:" + text + ">";
+    }
+
+    private static String shiftTag(int offset) {
+        return "<shift:" + offset + ">";
     }
 }

@@ -5,8 +5,11 @@ import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.PlayerContext;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.util.AdventureHelper;
 
 import java.util.function.Function;
+
+import static net.momirealms.craftengine.core.plugin.text.minimessage.FormattedLine.CUSTOM_RESOLVERS;
 
 public sealed interface ComponentProvider extends Function<Context, Component>
         permits ComponentProvider.Constant, ComponentProvider.L10N, ComponentProvider.MiniMessage {
@@ -21,6 +24,14 @@ public sealed interface ComponentProvider extends Function<Context, Component>
 
     static ComponentProvider l10n(String translationKey) {
         return new L10N(translationKey);
+    }
+
+    static ComponentProvider miniMessageOrConstant(String line) {
+        if (line.equals(AdventureHelper.customMiniMessage().stripTags(line, CUSTOM_RESOLVERS))) {
+            return constant(AdventureHelper.miniMessage().deserialize(line));
+        } else {
+            return new MiniMessage(line);
+        }
     }
 
     non-sealed class Constant implements ComponentProvider {
