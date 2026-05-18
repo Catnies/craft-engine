@@ -8,10 +8,10 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.plugin.Manageable;
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
+import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
+import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
-import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 
 public class VelocityNetworkTagDataBridge implements Manageable {
     public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetworkTagDataSyncService.TAG_DATA_CHANNEL);
@@ -53,7 +53,7 @@ public class VelocityNetworkTagDataBridge implements Manageable {
 
         ByteBuf buffer = Unpooled.buffer(event.getData().length);
         buffer.writeBytes(event.getData());
-        FriendlyByteBuf in = new FriendlyByteBuf(buffer);
+        ProxyByteBuf in = new ProxyByteBuf(buffer);
         String serverName = event.getSource() instanceof ServerConnection serverConnection
                 ? serverConnection.getServer().getServerInfo().getName()
                 : null;

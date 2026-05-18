@@ -1,9 +1,9 @@
 package net.momirealms.craftengine.proxy.common.tag;
 
 import io.netty.buffer.Unpooled;
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
+import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -106,7 +106,7 @@ public final class NetworkTagDataSyncService {
         NetworkTagData netWorkTagData = this.getTagDataForPlayer(player);
         long version = netWorkTagData != null ? netWorkTagData.version() : -1L;
 
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        ProxyByteBuf buf = new ProxyByteBuf(Unpooled.buffer());
         buf.writeUtf(this.secret);
         buf.writeLong(version);
         buf.writeUUID(PROXY_UUID);
@@ -115,7 +115,7 @@ public final class NetworkTagDataSyncService {
         player.sendServerPluginMessage(TAG_DATA_CHANNEL, data);
     }
 
-    public void receiveTagData(String serverName, FriendlyByteBuf in) {
+    public void receiveTagData(String serverName, ProxyByteBuf in) {
         if (this.secret.equals(in.readUtf())) {
             this.registry.put(serverName, this.codec.read(serverName, in));
         }

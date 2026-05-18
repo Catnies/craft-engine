@@ -18,6 +18,10 @@ public final class ReferenceImage implements Image {
         this.col = col;
     }
 
+    public Key refId() {
+        return refId;
+    }
+
     public Image image() {
         return this.ref.get();
     }

@@ -2,11 +2,11 @@ package net.momirealms.craftengine.proxy.common.network.packet;
 
 import io.netty.buffer.ByteBuf;
 import net.momirealms.craftengine.core.util.Cancellable;
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketTypeCommon;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
+import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -18,9 +18,9 @@ public final class PacketContext implements Cancellable {
     private final ClientVersion clientVersion;
     private final int packetId;
     private final @Nullable PacketTypeCommon packetType;
-    private final FriendlyByteBuf payload;
+    private final ProxyByteBuf payload;
     private final int payloadReaderIndex;
-    private @Nullable FriendlyByteBuf replacementPayload;
+    private @Nullable ProxyByteBuf replacementPayload;
     private boolean cancelled;
     private boolean changed;
 
@@ -30,7 +30,7 @@ public final class PacketContext implements Cancellable {
             ClientVersion clientVersion,
             int packetId,
             @Nullable PacketTypeCommon packetType,
-            FriendlyByteBuf payload,
+            ProxyByteBuf payload,
             int payloadReaderIndex
     ) {
         this.side = Objects.requireNonNull(side, "side");
@@ -63,13 +63,13 @@ public final class PacketContext implements Cancellable {
         return this.packetType;
     }
 
-    public FriendlyByteBuf payload() {
+    public ProxyByteBuf payload() {
         this.payload.readerIndex(this.payloadReaderIndex);
         return this.payload;
     }
 
-    public void rewritePayload(Consumer<FriendlyByteBuf> init) {
-        FriendlyByteBuf replacement = new FriendlyByteBuf(this.payload.source().alloc().buffer());
+    public void rewritePayload(Consumer<ProxyByteBuf> init) {
+        ProxyByteBuf replacement = new ProxyByteBuf(this.payload.source().alloc().buffer());
         boolean replaced = false;
         try {
             init.accept(replacement);

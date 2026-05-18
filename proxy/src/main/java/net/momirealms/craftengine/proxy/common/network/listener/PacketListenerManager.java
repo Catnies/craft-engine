@@ -3,7 +3,6 @@ package net.momirealms.craftengine.proxy.common.network.listener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.plugin.Manageable;
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.network.listener.game.*;
@@ -14,6 +13,7 @@ import net.momirealms.craftengine.proxy.common.network.protocol.packettype.Packe
 import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketTypeCommon;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
+import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public abstract class PacketListenerManager implements Manageable {
         this.internalRegistrations.add(this.packetRegistry.register(
                 PacketRoute.typed(ConnectionState.HANDSHAKING, PacketType.Handshaking.Client.HANDSHAKE),
                 (connection, player, packet) -> {
-                    FriendlyByteBuf payload = packet.payload();
+                    ProxyByteBuf payload = packet.payload();
                     int protocolVersion = payload.readVarInt();
                     payload.readUtf(255);
                     payload.readUnsignedShort();
@@ -98,7 +98,7 @@ public abstract class PacketListenerManager implements Manageable {
         }
 
         // 只在命中监听器时消费 packet id, 未命中或未修改时恢复 reader index
-        FriendlyByteBuf payload = new FriendlyByteBuf(buffer);
+        ProxyByteBuf payload = new ProxyByteBuf(buffer);
         int preProcessIndex = payload.readerIndex();
         int preProcessWriterIndex = payload.writerIndex();
         int packetId = -1;

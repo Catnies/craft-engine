@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.proxy.bungeecord.platform;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.event.EventHandler;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
 import net.momirealms.craftengine.proxy.common.platform.PlayerManager;
 import org.jetbrains.annotations.Nullable;

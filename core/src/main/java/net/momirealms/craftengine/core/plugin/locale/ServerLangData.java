@@ -33,20 +33,6 @@ public final class ServerLangData {
         return translation;
     }
 
-    // Velocity
-    public static ServerLangData read(FriendlyByteBuf buf) {
-        String fallback = buf.readBoolean() ? buf.readUtf() : null;
-        ServerLangData serverLangData = new ServerLangData(fallback);
-        // 读取
-        int size = buf.readVarInt();
-        for (int i = 0; i < size; i++) {
-            Locale locale = Locale.forLanguageTag(buf.readUtf());
-            String translation = buf.readUtf();
-            serverLangData.addTranslation(locale, translation);
-        }
-        return serverLangData;
-    }
-
     public void write(FriendlyByteBuf buf) {
         // fallback
         buf.writeBoolean(this.fallback != null);

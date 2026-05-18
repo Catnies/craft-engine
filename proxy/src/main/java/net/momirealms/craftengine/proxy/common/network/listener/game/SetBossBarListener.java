@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.proxy.common.network.listener.game;
 
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
@@ -11,6 +10,7 @@ import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagData;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
+import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public class SetBossBarListener implements PacketHandler {
 
         // 读取数据
         ClientVersion clientVersion = packet.clientVersion();
-        FriendlyByteBuf buf = packet.payload();
+        ProxyByteBuf buf = packet.payload();
 
         // 1.20.3 +
         if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_20_3)) {

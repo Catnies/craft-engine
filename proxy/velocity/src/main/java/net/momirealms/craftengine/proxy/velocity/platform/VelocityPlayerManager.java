@@ -2,7 +2,6 @@ package net.momirealms.craftengine.proxy.velocity.platform;
 
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
-import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.proxy.Player;
 import net.momirealms.craftengine.proxy.common.platform.PlayerManager;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;

@@ -63,46 +63,9 @@ public final class OffsetFont {
         this.positiveOffsets = positiveOffsets;
     }
 
-    // Velocity
-    public OffsetFont(FriendlyByteBuf buf) {
-        this.font = buf.readKey();
-        this.fontKey = Key.key(this.font.namespace, this.font.value);
-
-        this.negativeOffsets = new String[16];
-        for (int i = 1; i <= 15; i++) {
-            this.negativeOffsets[i] = buf.readUtf();
-        }
-        this.NEG_16 = buf.readUtf();
-        this.NEG_24 = buf.readUtf();
-        this.NEG_32 = buf.readUtf();
-        this.NEG_48 = buf.readUtf();
-        this.NEG_64 = buf.readUtf();
-        this.NEG_128 = buf.readUtf();
-        this.NEG_256 = buf.readUtf();
-
-        this.positiveOffsets = new String[16];
-        for (int i = 1; i <= 15; i++) {
-            this.positiveOffsets[i] = buf.readUtf();
-        }
-        this.POS_16 = buf.readUtf();
-        this.POS_24 = buf.readUtf();
-        this.POS_32 = buf.readUtf();
-        this.POS_48 = buf.readUtf();
-        this.POS_64 = buf.readUtf();
-        this.POS_128 = buf.readUtf();
-        this.POS_256 = buf.readUtf();
-    }
-
     public net.momirealms.craftengine.core.util.Key font() {
         return font;
     }
-
-
-
-//    @SuppressWarnings("all")
-//    public OffsetFont(Section section) {
-
-//    }
 
     public Component createOffset(int offset) {
         if (offset == 0) return Component.empty();
@@ -186,7 +149,8 @@ public final class OffsetFont {
         return stringBuilder.toString();
     }
 
-    public void write(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf byteBuf) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(byteBuf);
         buf.writeKey(font);
         for (int i = 1; i <= 15; i++) {
             buf.writeUtf(this.negativeOffsets[i]);
