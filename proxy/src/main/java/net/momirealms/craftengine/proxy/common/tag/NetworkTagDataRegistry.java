@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.proxy.common.font;
+package net.momirealms.craftengine.proxy.common.tag;
 
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;

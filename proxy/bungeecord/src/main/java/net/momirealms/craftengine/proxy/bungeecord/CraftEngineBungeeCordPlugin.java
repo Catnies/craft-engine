@@ -1,11 +1,13 @@
 package net.momirealms.craftengine.proxy.bungeecord;
 
-import com.github.retrooper.packetevents.PacketEvents;
-import io.github.retrooper.packetevents.bungee.factory.BungeePacketEventsBuilder;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.momirealms.craftengine.proxy.bungeecord.network.BungeePacketListenerManager;
+import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayerManager;
+import net.momirealms.craftengine.proxy.bungeecord.tag.BungeeNetworkTagDataBridge;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
-import net.momirealms.craftengine.proxy.common.font.NetworkTagDataSyncService;
-import net.momirealms.craftengine.proxy.bungeecord.font.BungeeNetworkTagDataBridge;
+import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketRegistry;
+import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 
 import java.io.File;
@@ -13,17 +15,17 @@ import java.nio.file.Path;
 
 public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEngineProxyPlugin {
     public static CraftEngineBungeeCordPlugin INSTANCE;
+    private BungeePlayerManager playerManager;
+    private BungeePacketListenerManager packetListenerManager;
     private BungeeNetworkTagDataBridge bungeeNetworkTagDataBridge;
 
     @Override
     public void onEnable() {
         INSTANCE = this;
-        PacketEvents.setAPI(BungeePacketEventsBuilder.build(this));
-        PacketEvents.getAPI().load();
         AdventureHelper.init();
+        this.playerManager = new BungeePlayerManager(this);
+        this.packetListenerManager = new BungeePacketListenerManager(this);
         this.bungeeNetworkTagDataBridge = new BungeeNetworkTagDataBridge(this);
-        this.bungeeNetworkTagDataBridge.load();
-        PacketEvents.getAPI().init();
     }
 
     @Override
@@ -41,6 +43,16 @@ public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEnginePr
     @Override
     public Path dataFolderPath() {
         return this.getDataFolder().toPath();
+    }
+
+    @Override
+    public BungeePlayerManager playerManager() {
+        return this.playerManager;
+    }
+
+    @Override
+    public PacketListenerManager packetListenerManager() {
+        return this.packetListenerManager;
     }
 
     @Override

@@ -2,10 +2,8 @@ package net.momirealms.craftengine.core.font;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 
 import java.util.Objects;
@@ -31,43 +29,80 @@ public final class OffsetFont {
     public final String POS_64;
     public final String POS_128;
     public final String POS_256;
-
-    public final String[] negativeOffsets = new String[16];
-    public final String[] positiveOffsets = new String[16];
+    public final String[] negativeOffsets;
+    public final String[] positiveOffsets;
 
     private final Cache<Integer, String> fastLookup = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .maximumSize(256)
             .build();
 
+    public OffsetFont(
+            net.momirealms.craftengine.core.util.Key font,
+            String neg16, String neg24, String neg32, String neg48, String neg64, String neg128, String neg256,
+            String pos16, String pos24, String pos32, String pos48, String pos64, String pos128, String pos256,
+            String[] negativeOffsets, String[] positiveOffsets
+    ) {
+        this.font = font;
+        this.fontKey = Key.key(font.namespace(), font.value());
+        this.NEG_16 = neg16;
+        this.NEG_24 = neg24;
+        this.NEG_32 = neg32;
+        this.NEG_48 = neg48;
+        this.NEG_64 = neg64;
+        this.NEG_128 = neg128;
+        this.NEG_256 = neg256;
+        this.POS_16 = pos16;
+        this.POS_24 = pos24;
+        this.POS_32 = pos32;
+        this.POS_48 = pos48;
+        this.POS_64 = pos64;
+        this.POS_128 = pos128;
+        this.POS_256 = pos256;
+        this.negativeOffsets = negativeOffsets;
+        this.positiveOffsets = positiveOffsets;
+    }
+
+    // Velocity
+    public OffsetFont(FriendlyByteBuf buf) {
+        this.font = buf.readKey();
+        this.fontKey = Key.key(this.font.namespace, this.font.value);
+
+        this.negativeOffsets = new String[16];
+        for (int i = 1; i <= 15; i++) {
+            this.negativeOffsets[i] = buf.readUtf();
+        }
+        this.NEG_16 = buf.readUtf();
+        this.NEG_24 = buf.readUtf();
+        this.NEG_32 = buf.readUtf();
+        this.NEG_48 = buf.readUtf();
+        this.NEG_64 = buf.readUtf();
+        this.NEG_128 = buf.readUtf();
+        this.NEG_256 = buf.readUtf();
+
+        this.positiveOffsets = new String[16];
+        for (int i = 1; i <= 15; i++) {
+            this.positiveOffsets[i] = buf.readUtf();
+        }
+        this.POS_16 = buf.readUtf();
+        this.POS_24 = buf.readUtf();
+        this.POS_32 = buf.readUtf();
+        this.POS_48 = buf.readUtf();
+        this.POS_64 = buf.readUtf();
+        this.POS_128 = buf.readUtf();
+        this.POS_256 = buf.readUtf();
+    }
+
     public net.momirealms.craftengine.core.util.Key font() {
         return font;
     }
 
-    @SuppressWarnings("all")
-    public OffsetFont(Section section) {
-        font = net.momirealms.craftengine.core.util.Key.of(section.getString("font", "minecraft:default"));
-        fontKey = Key.key(font.namespace(), font.value());
-        NEG_16 = convertIfUnicode(section.getString("-16", ""));
-        NEG_24 = convertIfUnicode(section.getString("-24", ""));
-        NEG_32 = convertIfUnicode(section.getString("-32", ""));
-        NEG_48 = convertIfUnicode(section.getString("-48", ""));
-        NEG_64 = convertIfUnicode(section.getString("-64", ""));
-        NEG_128 = convertIfUnicode(section.getString("-128", ""));
-        NEG_256 = convertIfUnicode(section.getString("-256", ""));
-        POS_16 = convertIfUnicode(section.getString("16", ""));
-        POS_24 = convertIfUnicode(section.getString("24", ""));
-        POS_32 = convertIfUnicode(section.getString("32", ""));
-        POS_48 = convertIfUnicode(section.getString("48", ""));
-        POS_64 = convertIfUnicode(section.getString("64", ""));
-        POS_128 = convertIfUnicode(section.getString("128", ""));
-        POS_256 = convertIfUnicode(section.getString("256", ""));
 
-        for (int i = 1; i <= 15; i++) {
-            negativeOffsets[i] = convertIfUnicode(section.getString("-" + i, ""));
-            positiveOffsets[i] = convertIfUnicode(section.getString(String.valueOf(i), ""));
-        }
-    }
+
+//    @SuppressWarnings("all")
+//    public OffsetFont(Section section) {
+
+//    }
 
     public Component createOffset(int offset) {
         if (offset == 0) return Component.empty();
@@ -149,40 +184,6 @@ public final class OffsetFont {
         if (offset == 0) return stringBuilder.toString();
         stringBuilder.append(negativeOffsets[offset]);
         return stringBuilder.toString();
-    }
-
-    private String convertIfUnicode(String str) {
-        if (str.startsWith("\\u")) {
-            return new String(CharacterUtils.decodeUnicodeToChars(str));
-        } else {
-            return str;
-        }
-    }
-
-    // Velocity
-    public OffsetFont(FriendlyByteBuf buf) {
-        font = buf.readKey();
-        fontKey = Key.key(font.namespace, font.value);
-        for (int i = 1; i <= 15; i++) {
-            negativeOffsets[i] = buf.readUtf();
-        }
-        NEG_16 = buf.readUtf();
-        NEG_24 = buf.readUtf();
-        NEG_32 = buf.readUtf();
-        NEG_48 = buf.readUtf();
-        NEG_64 = buf.readUtf();
-        NEG_128 = buf.readUtf();
-        NEG_256 = buf.readUtf();
-        for (int i = 1; i <= 15; i++) {
-            positiveOffsets[i] = buf.readUtf();
-        }
-        POS_16 = buf.readUtf();
-        POS_24 = buf.readUtf();
-        POS_32 = buf.readUtf();
-        POS_48 = buf.readUtf();
-        POS_64 = buf.readUtf();
-        POS_128 = buf.readUtf();
-        POS_256 = buf.readUtf();
     }
 
     public void write(FriendlyByteBuf buf) {

@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.plugin.context.ContextKey;
 import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
-import net.momirealms.craftengine.proxy.common.font.NetworkTagData;
+import net.momirealms.craftengine.proxy.common.tag.NetworkTagData;
 import net.momirealms.craftengine.proxy.common.text.minimessage.NetworkL10NTag;
 import org.jetbrains.annotations.NotNull;
 

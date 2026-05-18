@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.proxy.common.font;
+package net.momirealms.craftengine.proxy.common.tag;
 
 import net.kyori.adventure.text.minimessage.internal.parser.Token;
 import net.kyori.adventure.text.minimessage.internal.parser.TokenParser;
@@ -8,10 +8,12 @@ import net.momirealms.craftengine.core.font.OffsetFont;
 import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.StringValueOnlyTagVisitor;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
 import net.momirealms.craftengine.proxy.common.text.minimessage.GlobalVariableTag;
 import net.momirealms.craftengine.proxy.common.text.minimessage.ImageTag;
 import net.momirealms.craftengine.proxy.common.text.minimessage.ShiftTag;
+import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,6 +91,10 @@ public class NetworkTagData {
             }
         }
         return tags;
+    }
+
+    public Map<String, ComponentProvider> matchNetworkTags(Tag nbt) {
+        return this.matchNetworkTags(new StringValueOnlyTagVisitor().visit(nbt));
     }
 
     @Nullable

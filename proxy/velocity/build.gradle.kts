@@ -1,3 +1,5 @@
+import net.momirealms.netty
+
 plugins {
     id("xyz.jpenilla.run-velocity") version "3.0.2"
 }
@@ -16,10 +18,10 @@ repositories {
 dependencies {
     implementation(project(":core"))
     implementation(project(":proxy"))
+    netty(project)
     // Platform
     compileOnly("com.velocitypowered:velocity-api:${rootProject.properties["velocity_version"]}-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:${rootProject.properties["velocity_version"]}-SNAPSHOT")
-    implementation("com.github.retrooper:packetevents-velocity:${rootProject.properties["packet_events_version"]}")
 }
 
 tasks {

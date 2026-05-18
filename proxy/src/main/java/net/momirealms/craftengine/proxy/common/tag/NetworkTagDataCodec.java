@@ -1,10 +1,6 @@
-package net.momirealms.craftengine.proxy.common.font;
+package net.momirealms.craftengine.proxy.common.tag;
 
-import net.momirealms.craftengine.core.font.BitmapImage;
-import net.momirealms.craftengine.core.font.DummyImage;
-import net.momirealms.craftengine.core.font.Image;
-import net.momirealms.craftengine.core.font.OffsetFont;
-import net.momirealms.craftengine.core.font.ReferenceImage;
+import net.momirealms.craftengine.core.font.*;
 import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;

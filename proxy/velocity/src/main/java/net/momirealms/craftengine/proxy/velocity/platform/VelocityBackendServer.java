@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.proxy.velocity.platform;
 
-import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
 

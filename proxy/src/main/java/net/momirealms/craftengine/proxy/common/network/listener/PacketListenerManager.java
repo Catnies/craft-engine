@@ -1,0 +1,159 @@
+package net.momirealms.craftengine.proxy.common.network.listener;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import net.momirealms.craftengine.core.plugin.Manageable;
+import net.momirealms.craftengine.core.util.FriendlyByteBuf;
+import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
+import net.momirealms.craftengine.proxy.common.network.listener.game.*;
+import net.momirealms.craftengine.proxy.common.network.packet.*;
+import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
+import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
+import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketType;
+import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketTypeCommon;
+import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
+import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class PacketListenerManager implements Manageable {
+    protected final ProxyPacketRegistry packetRegistry;
+    protected final List<PacketRegistration> internalRegistrations = new ArrayList<>(); // 内部协议状态监听
+
+    public PacketListenerManager() {
+        this.packetRegistry = ProxyPacketRegistry.create();
+    }
+
+    // 注册常规监听器
+    protected void registerPacketListeners() {
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.PLAYER_LIST_HEADER_AND_FOOTER), new SetTabListHeaderAndFooterListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.TEAMS), new SetPlayerTeamListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.BOSS_BAR), new SetBossBarListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SET_TITLE_TEXT), new SetTitleTextListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SET_TITLE_SUBTITLE), new SetSubTitleTextListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.ACTION_BAR), new SetActionBarTextListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SYSTEM_CHAT_MESSAGE), new SystemChatListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.UPDATE_SCORE), new SetScoreListener(this.plugin()));
+        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SCOREBOARD_OBJECTIVE), new SetObjectiveListener(this.plugin()));
+    }
+
+    // 注册用于同步通用协议状态的内部数据包监听器
+    protected void registerInternalRegistrations() {
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.HANDSHAKING, PacketType.Handshaking.Client.HANDSHAKE),
+                (connection, player, packet) -> {
+                    FriendlyByteBuf payload = packet.payload();
+                    int protocolVersion = payload.readVarInt();
+                    payload.readUtf(255);
+                    payload.readUnsignedShort();
+                    int nextState = payload.readVarInt();
+
+                    connection.setProtocolVersion(protocolVersion);
+                    if (nextState == 1) {
+                        connection.setConnectionState(ConnectionState.STATUS);
+                    } else if (nextState == 2 || nextState == 3) {
+                        connection.setConnectionState(ConnectionState.LOGIN);
+                    }
+                }
+        ));
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.LOGIN, PacketType.Login.Server.LOGIN_SUCCESS),
+                (connection, player, packet) -> {
+                    if (connection.mappedClientVersion().isNewerThanOrEquals(ClientVersion.V_1_20_2)) {
+                        connection.setEncoderState(ConnectionState.CONFIGURATION);
+                    } else {
+                        connection.setConnectionState(ConnectionState.PLAY);
+                    }
+                }
+        ));
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.LOGIN, PacketType.Login.Client.LOGIN_SUCCESS_ACK),
+                (connection, player, packet) -> connection.setDecoderState(ConnectionState.CONFIGURATION)
+        ));
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.CONFIGURATION_START),
+                (connection, player, packet) -> connection.setEncoderState(ConnectionState.CONFIGURATION)
+        ));
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Client.CONFIGURATION_ACK),
+                (connection, player, packet) -> connection.setDecoderState(ConnectionState.CONFIGURATION)
+        ));
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.CONFIGURATION, PacketType.Configuration.Server.CONFIGURATION_END),
+                (connection, player, packet) -> connection.setEncoderState(ConnectionState.PLAY)
+        ));
+        this.internalRegistrations.add(this.packetRegistry.register(
+                PacketRoute.typed(ConnectionState.CONFIGURATION, PacketType.Configuration.Client.CONFIGURATION_END_ACK),
+                (connection, player, packet) -> connection.setDecoderState(ConnectionState.PLAY)
+        ));
+    }
+
+    // 处理原始数据包 buffer, 将数据包转换为 ProxyPacketContext 并返回最终应继续传递的 buffer
+    protected ByteBuf handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketSide side, ByteBuf buffer) {
+        if (!buffer.isReadable()) {
+            return buffer;
+        }
+
+        // 只在命中监听器时消费 packet id, 未命中或未修改时恢复 reader index
+        FriendlyByteBuf payload = new FriendlyByteBuf(buffer);
+        int preProcessIndex = payload.readerIndex();
+        int preProcessWriterIndex = payload.writerIndex();
+        int packetId = -1;
+        ProxyPacketContext packet = null;
+        try {
+            packetId = payload.readVarInt();
+            int payloadIndex = payload.readerIndex();
+            ConnectionState state = connection.getConnectionState(side);
+            ClientVersion clientVersion = connection.mappedClientVersion();
+            PacketHandlerChain chain = this.packetRegistry().find(side, state, clientVersion, packetId);
+            if (chain == null) {
+                payload.readerIndex(preProcessIndex);
+                return buffer;
+            }
+
+            PacketTypeCommon packetType = PacketType.getById(side, state, clientVersion, packetId);
+            packet = new ProxyPacketContext(side, state, clientVersion, packetId, packetType, payload, payloadIndex);
+            chain.handle(connection, player, packet);
+            if (packet.isCancelled()) {
+                payload.clear();
+                packet.releaseReplacementPayload();
+                return Unpooled.EMPTY_BUFFER;
+            }
+
+            ByteBuf replacement = packet.replacementPayloadSource();
+            if (replacement != null) {
+                replacement.readerIndex(0);
+                return replacement;
+            }
+
+            if (!packet.changed()) {
+                payload.readerIndex(preProcessIndex);
+            }
+            return buffer;
+        } catch (Throwable throwable) {
+            if (packet != null) {
+                packet.releaseReplacementPayload();
+            }
+            this.errorHandler().handle(packetId, side, throwable);
+            payload.readerIndex(preProcessIndex);
+            payload.writerIndex(preProcessWriterIndex);
+            return buffer;
+        }
+    }
+
+    public ProxyPacketRegistry packetRegistry() {
+        return this.packetRegistry;
+    }
+
+    public abstract ErrorHandler errorHandler();
+
+    public abstract CraftEngineProxyPlugin plugin();
+
+    @FunctionalInterface
+    public interface ErrorHandler {
+        void handle(int packetId, PacketSide side, Throwable throwable);
+    }
+}

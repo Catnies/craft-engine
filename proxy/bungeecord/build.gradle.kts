@@ -1,3 +1,5 @@
+import net.momirealms.netty
+
 repositories {
     mavenCentral()
     maven("https://jitpack.io/")
@@ -5,16 +7,15 @@ repositories {
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.gtemc.net/releases/")
     maven("https://repo.papermc.io/repository/maven-public/")
-    maven("https://repo.codemc.io/repository/maven-releases/")
-    maven("https://repo.codemc.io/repository/maven-snapshots/")
 }
 
 dependencies {
     implementation(project(":core"))
     implementation(project(":proxy"))
+    netty(project)
     // Platform
     compileOnly("net.md-5:bungeecord-api:${rootProject.properties["bungeecord_version"]}")
-    implementation("com.github.retrooper:packetevents-bungeecord:${rootProject.properties["packet_events_version"]}")
+    compileOnly("org.jetbrains:annotations:${rootProject.properties["jetbrains_annotations_version"]}")
 }
 
 tasks {

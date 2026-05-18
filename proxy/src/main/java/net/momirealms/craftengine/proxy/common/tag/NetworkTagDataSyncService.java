@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.proxy.common.font;
+package net.momirealms.craftengine.proxy.common.tag;
 
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
