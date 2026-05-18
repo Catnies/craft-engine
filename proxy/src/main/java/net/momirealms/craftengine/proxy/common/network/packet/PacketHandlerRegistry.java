@@ -10,17 +10,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public final class ProxyPacketRegistry {
+public final class PacketHandlerRegistry {
     private final PacketHandlerChain[][][][] handlers =
             new PacketHandlerChain[PacketSide.values().length][ConnectionState.values().length][ClientVersion.values().length][];
 
-    private ProxyPacketRegistry() {}
+    private PacketHandlerRegistry() {}
 
-    public static ProxyPacketRegistry create() {
-        return new ProxyPacketRegistry();
+    public static PacketHandlerRegistry create() {
+        return new PacketHandlerRegistry();
     }
 
-    public PacketRegistration register(@NotNull PacketRoute route, @NotNull ProxyPacketHandler handler) {
+    public PacketRegistration register(@NotNull PacketRoute route, @NotNull PacketHandler handler) {
         List<PacketHandlerChain> registeredChains = new ArrayList<>();
         if (route.typed()) {
             for (ClientVersion version : ClientVersion.values()) {
@@ -61,7 +61,7 @@ public final class ProxyPacketRegistry {
         return chain == null || chain.isEmpty() ? null : chain;
     }
 
-    private void add(PacketSide side, ConnectionState state, ClientVersion version, int packetId, ProxyPacketHandler handler, List<PacketHandlerChain> registeredChains) {
+    private void add(PacketSide side, ConnectionState state, ClientVersion version, int packetId, PacketHandler handler, List<PacketHandlerChain> registeredChains) {
         PacketHandlerChain chain = this.chain(side, state, version, packetId);
         chain.add(handler);
         registeredChains.add(chain);

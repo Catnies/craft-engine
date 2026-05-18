@@ -1,30 +1,28 @@
-package net.momirealms.craftengine.proxy.bungeecord.network.inject;
+package net.momirealms.craftengine.proxy.velocity.network.inject;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelInitializer;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
-
-final class BungeeChannelInitializer extends ChannelInitializer<Channel> {
+final class ChannelInitializer extends io.netty.channel.ChannelInitializer<Channel> {
     private static volatile Method initChannelMethod;
 
-    private final BungeePacketPipelineInjector injector;
-    private final ChannelInitializer<Channel> wrappedInitializer;
-    private final ProxyPacketSink packetSink;
+    private final PacketPipelineInjector injector;
+    private final io.netty.channel.ChannelInitializer<Channel> wrappedInitializer;
+    private final PacketSink packetSink;
     private final Consumer<ChannelConnection> connectionRegisterer;
     private final Consumer<ChannelConnection> connectionUnregister;
 
-    BungeeChannelInitializer(
-            BungeePacketPipelineInjector injector,
-            ChannelInitializer<Channel> wrappedInitializer,
-            ProxyPacketSink packetSink,
+    ChannelInitializer(
+            PacketPipelineInjector injector,
+            io.netty.channel.ChannelInitializer<Channel> wrappedInitializer,
+            PacketSink packetSink,
             Consumer<ChannelConnection> connectionRegisterer,
             Consumer<ChannelConnection> connectionUnregister
     ) {
@@ -37,7 +35,7 @@ final class BungeeChannelInitializer extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(@NotNull Channel channel) throws Exception {
-        // 先让 Bungee 完成自己的 pipeline 构建, 再添加自定义的 handler
+        // 先让 Velocity 完成自己的 pipeline 构建, 再添加自定义的 handler
         this.invokeWrappedInitializer(channel);
         if (!this.injector.injected()) {
             return;
@@ -45,24 +43,24 @@ final class BungeeChannelInitializer extends ChannelInitializer<Channel> {
         // 连接状态从 channel 创建时开始记录, 后续再绑定到 ProxyPlayer
         ChannelConnection connection = new ChannelConnection(channel);
         this.connectionRegisterer.accept(connection);
-        BungeePacketPipelineInjector.addTo(channel, this.packetSink, connection);
+        PacketPipelineInjector.addTo(channel, this.packetSink, connection);
         channel.closeFuture().addListener((ChannelFutureListener) future -> this.connectionUnregister.accept(connection));
     }
 
-    boolean belongsTo(BungeePacketPipelineInjector injector) {
+    boolean belongsTo(PacketPipelineInjector injector) {
         return this.injector == injector;
     }
 
-    ChannelInitializer<Channel> wrappedInitializer() {
+    io.netty.channel.ChannelInitializer<Channel> wrappedInitializer() {
         return this.wrappedInitializer;
     }
 
-    // 调用 Bungee 原始 protected initializer 上的 ChannelInitializer#initChannel
+    // 调用 Velocity 原始 protected initializer 上的 ChannelInitializer#initChannel
     private void invokeWrappedInitializer(Channel channel) throws Exception {
-        Method method = BungeeChannelInitializer.initChannelMethod;
+        Method method = initChannelMethod;
         if (method == null) {
-            method = ReflectionUtils.setAccessible(ChannelInitializer.class.getDeclaredMethod("initChannel", Channel.class));
-            BungeeChannelInitializer.initChannelMethod = method;
+            method = ReflectionUtils.setAccessible(io.netty.channel.ChannelInitializer.class.getDeclaredMethod("initChannel", Channel.class));
+            initChannelMethod = method;
         }
         method.invoke(this.wrappedInitializer, channel);
     }

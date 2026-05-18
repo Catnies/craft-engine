@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PacketListenerManager implements Manageable {
-    protected final ProxyPacketRegistry packetRegistry;
+    protected final PacketHandlerRegistry packetRegistry;
     protected final List<PacketRegistration> internalRegistrations = new ArrayList<>(); // 内部协议状态监听
 
     public PacketListenerManager() {
-        this.packetRegistry = ProxyPacketRegistry.create();
+        this.packetRegistry = PacketHandlerRegistry.create();
     }
 
     // 注册常规监听器
@@ -102,7 +102,7 @@ public abstract class PacketListenerManager implements Manageable {
         int preProcessIndex = payload.readerIndex();
         int preProcessWriterIndex = payload.writerIndex();
         int packetId = -1;
-        ProxyPacketContext packet = null;
+        PacketContext packet = null;
         try {
             packetId = payload.readVarInt();
             int payloadIndex = payload.readerIndex();
@@ -115,7 +115,7 @@ public abstract class PacketListenerManager implements Manageable {
             }
 
             PacketTypeCommon packetType = PacketType.getById(side, state, clientVersion, packetId);
-            packet = new ProxyPacketContext(side, state, clientVersion, packetId, packetType, payload, payloadIndex);
+            packet = new PacketContext(side, state, clientVersion, packetId, packetType, payload, payloadIndex);
             chain.handle(connection, player, packet);
             if (packet.isCancelled()) {
                 payload.clear();
@@ -144,7 +144,7 @@ public abstract class PacketListenerManager implements Manageable {
         }
     }
 
-    public ProxyPacketRegistry packetRegistry() {
+    public PacketHandlerRegistry packetRegistry() {
         return this.packetRegistry;
     }
 

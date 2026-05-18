@@ -4,8 +4,8 @@ import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketContext;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketHandler;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketContext;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketHandler;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagData;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class SetPlayerTeamListener implements ProxyPacketHandler {
+public class SetPlayerTeamListener implements PacketHandler {
     private final CraftEngineProxyPlugin plugin;
 
     public SetPlayerTeamListener(CraftEngineProxyPlugin plugin) {
@@ -25,7 +25,7 @@ public class SetPlayerTeamListener implements ProxyPacketHandler {
     }
 
     @Override
-    public void handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, ProxyPacketContext packet) {
+    public void handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketContext packet) {
         // 检查是否存在玩家当前服务器的数据
         if (player == null) return;
         NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagDataForPlayer(player);

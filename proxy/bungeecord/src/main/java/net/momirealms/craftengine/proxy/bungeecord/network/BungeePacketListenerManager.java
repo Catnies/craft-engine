@@ -8,7 +8,7 @@ import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
-import net.momirealms.craftengine.proxy.bungeecord.network.inject.BungeePacketPipelineInjector;
+import net.momirealms.craftengine.proxy.bungeecord.network.inject.PacketPipelineInjector;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class BungeePacketListenerManager extends PacketListenerManager implements Listener {
     private final CraftEngineBungeeCordPlugin plugin;
-    private final BungeePacketPipelineInjector pipelineInjector; // 负责 Bungee Netty pipeline 注入
+    private final PacketPipelineInjector pipelineInjector; // 负责 Bungee Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
     private final ConcurrentMap<Channel, ChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
     private final ConcurrentMap<SocketAddress, ChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
@@ -33,7 +33,7 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         super();
         this.plugin = plugin;
         this.errorHandler = this::handlePacketError;
-        this.pipelineInjector = new BungeePacketPipelineInjector(
+        this.pipelineInjector = new PacketPipelineInjector(
                 plugin,
                 this::handlePacket,
                 this::addConnection,
@@ -78,7 +78,7 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         for (ChannelConnection connection : this.connectionsByChannel.values()) {
             Channel channel = connection.channel();
             if (channel.isOpen()) {
-                channel.eventLoop().execute(() -> BungeePacketPipelineInjector.removeHandlers(channel));
+                channel.eventLoop().execute(() -> PacketPipelineInjector.removeHandlers(channel));
             }
         }
         this.connectionsByChannel.clear();

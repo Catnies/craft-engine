@@ -7,10 +7,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 public class PacketHandlerChain {
-    private volatile ProxyPacketHandler[] handlers = new ProxyPacketHandler[0];
+    private volatile PacketHandler[] handlers = new PacketHandler[0];
 
-    public void handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, ProxyPacketContext packet) {
-        for (ProxyPacketHandler handler : this.handlers) {
+    public void handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketContext packet) {
+        for (PacketHandler handler : this.handlers) {
             handler.handle(connection, player, packet);
             if (packet.isCancelled()) {
                 return;
@@ -18,20 +18,20 @@ public class PacketHandlerChain {
         }
     }
 
-    public synchronized void add(ProxyPacketHandler handler) {
-        ProxyPacketHandler[] current = this.handlers;
-        ProxyPacketHandler[] updated = Arrays.copyOf(current, current.length + 1);
+    public synchronized void add(PacketHandler handler) {
+        PacketHandler[] current = this.handlers;
+        PacketHandler[] updated = Arrays.copyOf(current, current.length + 1);
         updated[current.length] = handler;
         this.handlers = updated;
     }
 
-    public synchronized void remove(ProxyPacketHandler handler) {
-        ProxyPacketHandler[] current = this.handlers;
+    public synchronized void remove(PacketHandler handler) {
+        PacketHandler[] current = this.handlers;
         for (int i = 0; i < current.length; i++) {
             if (current[i] != handler) {
                 continue;
             }
-            ProxyPacketHandler[] updated = new ProxyPacketHandler[current.length - 1];
+            PacketHandler[] updated = new PacketHandler[current.length - 1];
             System.arraycopy(current, 0, updated, 0, i);
             System.arraycopy(current, i + 1, updated, i, current.length - i - 1);
             this.handlers = updated;

@@ -12,7 +12,7 @@ import net.momirealms.craftengine.proxy.common.network.packet.PacketRegistration
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketType;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
-import net.momirealms.craftengine.proxy.velocity.network.inject.VelocityPacketPipelineInjector;
+import net.momirealms.craftengine.proxy.velocity.network.inject.PacketPipelineInjector;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 
 import java.net.SocketAddress;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public final class VelocityPacketListenerManager extends PacketListenerManager {
     private final CraftEngineVelocityPlugin plugin;
-    private final VelocityPacketPipelineInjector pipelineInjector; // 负责 Velocity Netty pipeline 注入
+    private final PacketPipelineInjector pipelineInjector; // 负责 Velocity Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
     private final ConcurrentMap<Channel, ChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
     private final ConcurrentMap<SocketAddress, ChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
@@ -31,7 +31,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         super();
         this.plugin = plugin;
         this.errorHandler = this::handlePacketError;
-        this.pipelineInjector = new VelocityPacketPipelineInjector(
+        this.pipelineInjector = new PacketPipelineInjector(
                 plugin,
                 this::handlePacket,
                 this::addConnection,
@@ -76,7 +76,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         for (ChannelConnection connection : this.connectionsByChannel.values()) {
             Channel channel = connection.channel();
             if (channel.isOpen()) {
-                channel.eventLoop().execute(() -> VelocityPacketPipelineInjector.removeHandlers(channel));
+                channel.eventLoop().execute(() -> PacketPipelineInjector.removeHandlers(channel));
             }
         }
         this.connectionsByChannel.clear();

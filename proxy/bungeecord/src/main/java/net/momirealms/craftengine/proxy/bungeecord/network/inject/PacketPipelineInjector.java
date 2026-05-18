@@ -2,14 +2,13 @@ package net.momirealms.craftengine.proxy.bungeecord.network.inject;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import net.md_5.bungee.api.ProxyServer;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.SetMonitor;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -17,14 +16,14 @@ import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public final class BungeePacketPipelineInjector {
+public final class PacketPipelineInjector {
     private static final String MINECRAFT_DECODER = "packet-decoder";
     private static final String MINECRAFT_ENCODER = "packet-encoder";
     private static final String PACKET_DECODER = "craftengine_proxy_packet_decoder";
     private static final String PACKET_ENCODER = "craftengine_proxy_packet_encoder";
     private static final Field LISTENERS_FIELD;
     private final CraftEngineBungeeCordPlugin plugin;
-    private final ProxyPacketSink packetSink; // raw ByteBuf 捕获回调
+    private final PacketSink packetSink; // raw ByteBuf 捕获回调
     private final Consumer<ChannelConnection> connectionRegisterer; // 新 Channel 注册回调
     private final Consumer<ChannelConnection> connectionUnregister; // Channel 关闭清理回调
     private volatile boolean injected; // initializer 是否处于注入状态
@@ -33,9 +32,9 @@ public final class BungeePacketPipelineInjector {
         LISTENERS_FIELD = ReflectionUtils.getDeclaredField(ProxyServer.getInstance().getClass(), "listeners");
     }
 
-    public BungeePacketPipelineInjector(
+    public PacketPipelineInjector(
             CraftEngineBungeeCordPlugin plugin,
-            ProxyPacketSink packetSink,
+            PacketSink packetSink,
             Consumer<ChannelConnection> connectionRegisterer,
             Consumer<ChannelConnection> connectionUnregister
     ) {
@@ -92,9 +91,9 @@ public final class BungeePacketPipelineInjector {
 
         try {
             @SuppressWarnings("unchecked")
-            ChannelInitializer<Channel> newInitializer = new BungeeChannelInitializer(
+            io.netty.channel.ChannelInitializer<Channel> newInitializer = new ChannelInitializer(
                     this,
-                    (ChannelInitializer<Channel>) initializerField.get(bootstrapAcceptor),
+                    (io.netty.channel.ChannelInitializer<Channel>) initializerField.get(bootstrapAcceptor),
                     this.packetSink,
                     this.connectionRegisterer,
                     this.connectionUnregister
@@ -106,33 +105,33 @@ public final class BungeePacketPipelineInjector {
     }
 
     // 将数据包捕获 handler 添加到 BungeeCord Minecraft codec handler 之前
-    public static void addTo(Channel channel, ProxyPacketSink packetSink, ChannelConnection connection) {
+    public static void addTo(Channel channel, PacketSink packetSink, ChannelConnection connection) {
         ChannelPipeline pipeline = channel.pipeline();
-        BungeePacketPipelineInjector.removeHandlers(channel);
+        PacketPipelineInjector.removeHandlers(channel);
 
-        if (pipeline.get(BungeePacketPipelineInjector.MINECRAFT_DECODER) != null) {
-            pipeline.addBefore(BungeePacketPipelineInjector.MINECRAFT_DECODER, BungeePacketPipelineInjector.PACKET_DECODER, new BungeePacketDecoder(packetSink, connection));
+        if (pipeline.get(PacketPipelineInjector.MINECRAFT_DECODER) != null) {
+            pipeline.addBefore(PacketPipelineInjector.MINECRAFT_DECODER, PacketPipelineInjector.PACKET_DECODER, new PacketDecoder(packetSink, connection));
         }
-        if (pipeline.get(BungeePacketPipelineInjector.MINECRAFT_ENCODER) != null) {
-            pipeline.addBefore(BungeePacketPipelineInjector.MINECRAFT_ENCODER, BungeePacketPipelineInjector.PACKET_ENCODER, new BungeePacketEncoder(packetSink, connection));
+        if (pipeline.get(PacketPipelineInjector.MINECRAFT_ENCODER) != null) {
+            pipeline.addBefore(PacketPipelineInjector.MINECRAFT_ENCODER, PacketPipelineInjector.PACKET_ENCODER, new PacketEncoder(packetSink, connection));
         }
     }
 
     // 从已注入的 channel 中移除 handler
     public static void removeHandlers(Channel channel) {
         ChannelPipeline pipeline = channel.pipeline();
-        if (pipeline.get(BungeePacketPipelineInjector.PACKET_DECODER) != null) {
-            pipeline.remove(BungeePacketPipelineInjector.PACKET_DECODER);
+        if (pipeline.get(PacketPipelineInjector.PACKET_DECODER) != null) {
+            pipeline.remove(PacketPipelineInjector.PACKET_DECODER);
         }
-        if (pipeline.get(BungeePacketPipelineInjector.PACKET_ENCODER) != null) {
-            pipeline.remove(BungeePacketPipelineInjector.PACKET_ENCODER);
+        if (pipeline.get(PacketPipelineInjector.PACKET_ENCODER) != null) {
+            pipeline.remove(PacketPipelineInjector.PACKET_ENCODER);
         }
     }
 
     // 启用压缩并改变 pipeline 后, 将数据包 handler 移回 BungeeCord codec 之前
     public static void relocate(ChannelPipeline pipeline) {
-        BungeePacketPipelineInjector.relocate(pipeline, BungeePacketPipelineInjector.MINECRAFT_ENCODER, BungeePacketPipelineInjector.PACKET_ENCODER);
-        BungeePacketPipelineInjector.relocate(pipeline, BungeePacketPipelineInjector.MINECRAFT_DECODER, BungeePacketPipelineInjector.PACKET_DECODER);
+        PacketPipelineInjector.relocate(pipeline, PacketPipelineInjector.MINECRAFT_ENCODER, PacketPipelineInjector.PACKET_ENCODER);
+        PacketPipelineInjector.relocate(pipeline, PacketPipelineInjector.MINECRAFT_DECODER, PacketPipelineInjector.PACKET_DECODER);
     }
 
     // 保留同一个 handler 实例, 并将其重新添加到目标 handler 之前

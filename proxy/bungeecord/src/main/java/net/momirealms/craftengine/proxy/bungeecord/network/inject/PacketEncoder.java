@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.proxy.velocity.network.inject;
+package net.momirealms.craftengine.proxy.bungeecord.network.inject;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -6,17 +6,17 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.ReferenceCountUtil;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 
 import java.util.List;
 
 @ChannelHandler.Sharable
-final class VelocityPacketEncoder extends MessageToMessageEncoder<ByteBuf> {
-    private final ProxyPacketSink packetSink;
+final class PacketEncoder extends MessageToMessageEncoder<ByteBuf> {
+    private final PacketSink packetSink;
     private final ChannelConnection connection;
 
-    VelocityPacketEncoder(ProxyPacketSink packetSink, ChannelConnection connection) {
+    PacketEncoder(PacketSink packetSink, ChannelConnection connection) {
         this.packetSink = packetSink;
         this.connection = connection;
     }

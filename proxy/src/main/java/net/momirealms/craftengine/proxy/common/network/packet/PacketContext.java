@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public final class ProxyPacketContext implements Cancellable {
+public final class PacketContext implements Cancellable {
     private final PacketSide side;
     private final ConnectionState state;
     private final ClientVersion clientVersion;
@@ -24,7 +24,7 @@ public final class ProxyPacketContext implements Cancellable {
     private boolean cancelled;
     private boolean changed;
 
-    public ProxyPacketContext(
+    public PacketContext(
             PacketSide side,
             ConnectionState state,
             ClientVersion clientVersion,

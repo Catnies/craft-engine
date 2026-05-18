@@ -6,19 +6,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.ReferenceCountUtil;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
 
 import java.util.List;
 
 @ChannelHandler.Sharable
-final class VelocityPacketDecoder extends MessageToMessageDecoder<ByteBuf> {
-    private final ProxyPacketSink packetSink;
+final class PacketDecoder extends MessageToMessageDecoder<ByteBuf> {
+    private final PacketSink packetSink;
     private final ChannelConnection connection;
     private boolean relocated; // compression 启用后只重排一次
 
-    VelocityPacketDecoder(ProxyPacketSink packetSink, ChannelConnection connection) {
+    PacketDecoder(PacketSink packetSink, ChannelConnection connection) {
         this.packetSink = packetSink;
         this.connection = connection;
         // 如果没有启用数据包压缩, 则直接标记, 无需触发重排.
@@ -41,9 +41,9 @@ final class VelocityPacketDecoder extends MessageToMessageDecoder<ByteBuf> {
     @Override
     public void userEventTriggered(ChannelHandlerContext context, Object event) throws Exception {
         // Velocity 启用压缩会重建 codec 顺序, 需要把捕获 handler 放回 codec 前
-        if (!this.relocated && VelocityPacketPipelineInjector.isCompressionEnabledEvent(event)) {
+        if (!this.relocated && PacketPipelineInjector.isCompressionEnabledEvent(event)) {
             this.relocated = true;
-            VelocityPacketPipelineInjector.relocate(context.pipeline());
+            PacketPipelineInjector.relocate(context.pipeline());
         }
         super.userEventTriggered(context, event);
     }

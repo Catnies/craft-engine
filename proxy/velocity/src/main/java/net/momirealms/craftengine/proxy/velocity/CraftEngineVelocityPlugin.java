@@ -9,8 +9,6 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
-import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketRegistry;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import net.momirealms.craftengine.proxy.velocity.network.VelocityPacketListenerManager;

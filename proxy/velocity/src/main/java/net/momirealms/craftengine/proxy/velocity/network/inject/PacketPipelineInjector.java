@@ -2,11 +2,10 @@ package net.momirealms.craftengine.proxy.velocity.network.inject;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
-import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
+import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
 
 import java.lang.reflect.Field;
@@ -14,7 +13,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class VelocityPacketPipelineInjector {
+public final class PacketPipelineInjector {
     private static final String MINECRAFT_DECODER = "minecraft-decoder";
     private static final String MINECRAFT_ENCODER = "minecraft-encoder";
     private static final String PACKET_DECODER = "craftengine_proxy_packet_decoder";
@@ -23,14 +22,14 @@ public final class VelocityPacketPipelineInjector {
     private static final String SERVER_INITIALIZER_HOLDER_CLASS_NAME = "com.velocitypowered.proxy.network.ServerChannelInitializerHolder";
 
     private final CraftEngineVelocityPlugin plugin;
-    private final ProxyPacketSink packetSink; // raw ByteBuf 捕获回调
+    private final PacketSink packetSink; // raw ByteBuf 捕获回调
     private final Consumer<ChannelConnection> connectionRegisterer; // 新 Channel 注册回调
     private final Consumer<ChannelConnection> connectionUnregister; // Channel 关闭清理回调
     private volatile boolean injected; // initializer 是否处于注入状态
 
-    public VelocityPacketPipelineInjector(
+    public PacketPipelineInjector(
             CraftEngineVelocityPlugin plugin,
-            ProxyPacketSink packetSink,
+            PacketSink packetSink,
             Consumer<ChannelConnection> connectionRegisterer,
             Consumer<ChannelConnection> connectionUnregister
     ) {
@@ -45,9 +44,9 @@ public final class VelocityPacketPipelineInjector {
     public void inject() {
         try {
             Object holder = this.serverInitializerHolder();
-            Supplier<ChannelInitializer<Channel>> supplier = (Supplier<ChannelInitializer<Channel>>) holder;
-            ChannelInitializer<Channel> current = supplier.get();
-            if (current instanceof VelocityChannelInitializer initializer) {
+            Supplier<io.netty.channel.ChannelInitializer<Channel>> supplier = (Supplier<io.netty.channel.ChannelInitializer<Channel>>) holder;
+            io.netty.channel.ChannelInitializer<Channel> current = supplier.get();
+            if (current instanceof ChannelInitializer initializer) {
                 // 如果注入的目标和当前一致, 则代表是重复注入, 忽略.
                 if (initializer.belongsTo(this)) {
                     this.injected = true;
@@ -57,8 +56,8 @@ public final class VelocityPacketPipelineInjector {
                 current = initializer.wrappedInitializer();
             }
             // 注入
-            Field initializerField = ReflectionUtils.getDeclaredField(holder.getClass(), ChannelInitializer.class, 0);
-            Objects.requireNonNull(initializerField).set(holder, new VelocityChannelInitializer(
+            Field initializerField = ReflectionUtils.getDeclaredField(holder.getClass(), io.netty.channel.ChannelInitializer.class, 0);
+            Objects.requireNonNull(initializerField).set(holder, new ChannelInitializer(
                     this,
                     current,
                     this.packetSink,
@@ -77,13 +76,13 @@ public final class VelocityPacketPipelineInjector {
         this.injected = false;
         try {
             Object holder = this.serverInitializerHolder();
-            Supplier<ChannelInitializer<Channel>> supplier = (Supplier<ChannelInitializer<Channel>>) holder;
-            ChannelInitializer<Channel> current = supplier.get();
-            if (!(current instanceof VelocityChannelInitializer initializer) || !initializer.belongsTo(this)) {
+            Supplier<io.netty.channel.ChannelInitializer<Channel>> supplier = (Supplier<io.netty.channel.ChannelInitializer<Channel>>) holder;
+            io.netty.channel.ChannelInitializer<Channel> current = supplier.get();
+            if (!(current instanceof ChannelInitializer initializer) || !initializer.belongsTo(this)) {
                 return;
             }
             // 撤销注入
-            Field initializerField = ReflectionUtils.getDeclaredField(holder.getClass(), ChannelInitializer.class, 0);
+            Field initializerField = ReflectionUtils.getDeclaredField(holder.getClass(), io.netty.channel.ChannelInitializer.class, 0);
             Objects.requireNonNull(initializerField).set(holder, initializer.wrappedInitializer());
         } catch (ReflectiveOperationException | ClassCastException | NullPointerException e) {
             this.plugin.logger.warn("Failed to uninject CraftEngine Velocity packet capture service", e);
@@ -116,15 +115,15 @@ public final class VelocityPacketPipelineInjector {
     }
 
     // 将数据包捕获 handler 添加到 Velocity Minecraft codec handler 之前
-    public static void addTo(Channel channel, ProxyPacketSink packetSink, ChannelConnection connection) {
+    public static void addTo(Channel channel, PacketSink packetSink, ChannelConnection connection) {
         ChannelPipeline pipeline = channel.pipeline();
         removeHandlers(channel);
 
         if (pipeline.get(MINECRAFT_DECODER) != null) {
-            pipeline.addBefore(MINECRAFT_DECODER, PACKET_DECODER, new VelocityPacketDecoder(packetSink, connection));
+            pipeline.addBefore(MINECRAFT_DECODER, PACKET_DECODER, new PacketDecoder(packetSink, connection));
         }
         if (pipeline.get(MINECRAFT_ENCODER) != null) {
-            pipeline.addBefore(MINECRAFT_ENCODER, PACKET_ENCODER, new VelocityPacketEncoder(packetSink, connection));
+            pipeline.addBefore(MINECRAFT_ENCODER, PACKET_ENCODER, new PacketEncoder(packetSink, connection));
         }
     }
 

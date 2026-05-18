@@ -5,11 +5,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class PacketRegistration implements AutoCloseable {
     private final PacketRoute route;
-    private final ProxyPacketHandler handler;
+    private final PacketHandler handler;
     private final Runnable unregisterAction;
     private final AtomicBoolean registered = new AtomicBoolean(true);
 
-    PacketRegistration(PacketRoute route, ProxyPacketHandler handler, Runnable unregisterAction) {
+    PacketRegistration(PacketRoute route, PacketHandler handler, Runnable unregisterAction) {
         this.route = Objects.requireNonNull(route, "route");
         this.handler = Objects.requireNonNull(handler, "handler");
         this.unregisterAction = Objects.requireNonNull(unregisterAction, "unregisterAction");
@@ -19,7 +19,7 @@ public final class PacketRegistration implements AutoCloseable {
         return this.route;
     }
 
-    public ProxyPacketHandler handler() {
+    public PacketHandler handler() {
         return this.handler;
     }
 
