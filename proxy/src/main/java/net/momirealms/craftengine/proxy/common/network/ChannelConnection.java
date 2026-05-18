@@ -1,24 +1,23 @@
-package net.momirealms.craftengine.proxy.bungeecord.network;
+package net.momirealms.craftengine.proxy.common.network;
 
 import io.netty.channel.Channel;
-import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
-import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
+import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public final class BungeeChannelConnection implements ProtocolStateHolder {
+public class ChannelConnection implements ProtocolStateHolder  {
     private final Channel channel;
-    private volatile @Nullable BungeePlayer player; // 登录完成后绑定的玩家
+    private volatile @Nullable ProxyPlayer player; // 登录完成后绑定的玩家
     private volatile int protocolVersion = -1; // handshake 读取到的原始协议号
     private volatile ClientVersion clientVersion = ClientVersion.UNKNOWN; // 由协议号映射出的客户端版本
     private volatile ConnectionState decoderState = ConnectionState.HANDSHAKING; // 客户端到服务端方向状态
     private volatile ConnectionState encoderState = ConnectionState.HANDSHAKING; // 服务端到客户端方向状态
 
-    public BungeeChannelConnection(Channel channel) {
+    public ChannelConnection(Channel channel) {
         this.channel = channel;
     }
 
@@ -28,18 +27,18 @@ public final class BungeeChannelConnection implements ProtocolStateHolder {
 
     // 返回已绑定的玩家, BungeeCord 登录流程未完成时为 null
     @Nullable
-    public BungeePlayer player() {
+    public ProxyPlayer player() {
         return this.player;
     }
 
     // 玩家可用后使用玩家作为状态持有者, 否则回退到 channel 状态
     public ProtocolStateHolder connection() {
-        BungeePlayer current = this.player;
+        ProxyPlayer current = this.player;
         return current != null ? current : this;
     }
 
     // 绑定 BungeeCord 玩家, 并复制登录完成前捕获到的协议状态
-    public void bind(BungeePlayer player) {
+    public void bind(ProxyPlayer player) {
         if (this.protocolVersion >= 0) {
             player.setProtocolVersion(this.protocolVersion);
         }
@@ -50,7 +49,7 @@ public final class BungeeChannelConnection implements ProtocolStateHolder {
 
     // 当 BungeeCord 上报匹配的断开连接事件时解除玩家绑定
     public void unbind(UUID uuid) {
-        BungeePlayer current = this.player;
+        ProxyPlayer current = this.player;
         if (current != null && Objects.equals(current.uuid(), uuid)) {
             this.player = null;
         }

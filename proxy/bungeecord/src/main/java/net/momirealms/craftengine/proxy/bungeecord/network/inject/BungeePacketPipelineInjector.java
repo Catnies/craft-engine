@@ -5,10 +5,14 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import net.md_5.bungee.api.ProxyServer;
+import net.momirealms.craftengine.core.util.ReflectionUtils;
+import net.momirealms.craftengine.core.util.SetMonitor;
 import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
-import net.momirealms.craftengine.proxy.bungeecord.network.BungeeChannelConnection;
-import org.jetbrains.annotations.NotNull;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -19,18 +23,90 @@ public final class BungeePacketPipelineInjector {
     private static final String PACKET_DECODER = "craftengine_proxy_packet_decoder";
     private static final String PACKET_ENCODER = "craftengine_proxy_packet_encoder";
     private static final Field LISTENERS_FIELD;
+    private final CraftEngineBungeeCordPlugin plugin;
+    private final ProxyPacketSink packetSink; // raw ByteBuf 捕获回调
+    private final Consumer<ChannelConnection> connectionRegisterer; // 新 Channel 注册回调
+    private final Consumer<ChannelConnection> connectionUnregister; // Channel 关闭清理回调
+    private volatile boolean injected; // initializer 是否处于注入状态
 
     static {
+        LISTENERS_FIELD = ReflectionUtils.getDeclaredField(ProxyServer.getInstance().getClass(), "listeners");
+    }
+
+    public BungeePacketPipelineInjector(
+            CraftEngineBungeeCordPlugin plugin,
+            ProxyPacketSink packetSink,
+            Consumer<ChannelConnection> connectionRegisterer,
+            Consumer<ChannelConnection> connectionUnregister
+    ) {
+        this.plugin = plugin;
+        this.packetSink = packetSink;
+        this.connectionRegisterer = connectionRegisterer;
+        this.connectionUnregister = connectionUnregister;
+    }
+
+    // 注入服务端 channel initializer
+    @SuppressWarnings("unchecked")
+    public void inject() {
         try {
-            LISTENERS_FIELD = ProxyServer.getInstance().getClass().getDeclaredField("listeners");
-            LISTENERS_FIELD.setAccessible(true);
-        } catch (Exception e) {
+            Set<Channel> listeners = (Set<Channel>) LISTENERS_FIELD.get(ProxyServer.getInstance());
+            for (Channel channel : listeners) {
+                this.injectChannel(channel);
+            }
+
+            Set<Channel> wrapper = new SetMonitor<>(listeners, this::injectChannel, channel -> {});
+            LISTENERS_FIELD.set(ProxyServer.getInstance(), wrapper);
+            this.injected = true;
+        } catch (IllegalAccessException e) {
+            PrintWriter printWriter = new PrintWriter(new StringWriter());
+            e.printStackTrace(printWriter);
+            this.plugin.getLogger().severe(printWriter.toString());
+        }
+    }
+
+    // 撤销注入的 channel initializer.
+    public void uninject() {
+    }
+
+    boolean injected() {
+        return this.injected;
+    }
+
+    public void injectChannel(Channel channel) {
+        Field initializerField = null;
+        ChannelHandler bootstrapAcceptor = null;
+
+        for (String channelName : channel.pipeline().names()) {
+            if (channelName.contains("QueryHandler")) {
+                return;
+            }
+            ChannelHandler handler = channel.pipeline().get(channelName);
+            if (handler == null) continue;
+            bootstrapAcceptor = handler;
+            initializerField = ReflectionUtils.getDeclaredField(handler.getClass(), "childHandler");
+        }
+        if (bootstrapAcceptor == null) {
+            bootstrapAcceptor = channel.pipeline().first();
+            initializerField = ReflectionUtils.getDeclaredField(bootstrapAcceptor.getClass(), "childHandler");
+        }
+
+        try {
+            @SuppressWarnings("unchecked")
+            ChannelInitializer<Channel> newInitializer = new BungeeChannelInitializer(
+                    this,
+                    (ChannelInitializer<Channel>) initializerField.get(bootstrapAcceptor),
+                    this.packetSink,
+                    this.connectionRegisterer,
+                    this.connectionUnregister
+            );
+            initializerField.set(bootstrapAcceptor, newInitializer);
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
     // 将数据包捕获 handler 添加到 BungeeCord Minecraft codec handler 之前
-    public static void addTo(Channel channel, BungeePacketSink packetSink, BungeeChannelConnection connection) {
+    public static void addTo(Channel channel, ProxyPacketSink packetSink, ChannelConnection connection) {
         ChannelPipeline pipeline = channel.pipeline();
         BungeePacketPipelineInjector.removeHandlers(channel);
 
@@ -66,115 +142,5 @@ public final class BungeePacketPipelineInjector {
             pipeline.remove(handlerName);
             pipeline.addBefore(target, handlerName, handler);
         }
-    }
-    private final CraftEngineBungeeCordPlugin plugin;
-    private final BungeePacketSink packetSink; // raw ByteBuf 捕获回调
-    private final Consumer<BungeeChannelConnection> connectionRegisterer; // 新 Channel 注册回调
-    private final Consumer<BungeeChannelConnection> connectionUnregister; // Channel 关闭清理回调
-    private volatile boolean injected; // initializer 是否处于注入状态
-
-    public BungeePacketPipelineInjector(
-            CraftEngineBungeeCordPlugin plugin,
-            BungeePacketSink packetSink,
-            Consumer<BungeeChannelConnection> connectionRegisterer,
-            Consumer<BungeeChannelConnection> connectionUnregister
-    ) {
-        this.plugin = plugin;
-        this.packetSink = packetSink;
-        this.connectionRegisterer = connectionRegisterer;
-        this.connectionUnregister = connectionUnregister;
-    }
-
-    public void injectChannel(Channel channel) {
-        Field initializerField = null;
-        ChannelHandler bootstrapAcceptor = null;
-        for (String channelName : channel.pipeline().names()) {
-            if (channelName.contains("QueryHandler")) {
-                return;
-            }
-
-            ChannelHandler handler = channel.pipeline().get(channelName);
-            if (handler == null) continue;
-            try {
-                Field f = handler.getClass().getDeclaredField("childHandler");
-                f.setAccessible(true);
-                bootstrapAcceptor = handler;
-                initializerField = f;
-            } catch (Exception ignore) {
-            }
-        }
-
-        if (bootstrapAcceptor == null) {
-            bootstrapAcceptor = channel.pipeline().first();
-            try {
-                initializerField = bootstrapAcceptor.getClass().getDeclaredField("childHandler");
-                initializerField.setAccessible(true);
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        ChannelInitializer<Channel> newInitializer;
-        try {
-            newInitializer = new BungeeChannelInitializer(
-                    this,
-                    (ChannelInitializer<Channel>) initializerField.get(bootstrapAcceptor),
-                    this.packetSink,
-                    this.connectionRegisterer,
-                    this.connectionUnregister
-            );
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            initializerField.set(bootstrapAcceptor, newInitializer);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 注入服务端 channel initializer
-    @SuppressWarnings("unchecked")
-    public void inject() {
-        try {
-            Set<Channel> listeners = (Set<Channel>) BungeePacketPipelineInjector.LISTENERS_FIELD.get(ProxyServer.getInstance());
-
-            for (Channel channel : listeners) {
-                this.injectChannel(channel);
-            }
-
-            Set<Channel> wrapper = new SetWrapper<>(listeners, this::injectChannel);
-            BungeePacketPipelineInjector.LISTENERS_FIELD.set(ProxyServer.getInstance(), wrapper);
-
-            this.injected = true;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private @NotNull ChannelInitializer<Channel> getChannelChannelInitializer(Field initializerField, ChannelHandler bootstrapAcceptor) {
-        ChannelInitializer<Channel> newInitializer;
-        try {
-            newInitializer = new BungeeChannelInitializer(
-                    this,
-                    (ChannelInitializer<Channel>) initializerField.get(bootstrapAcceptor),
-                    this.packetSink,
-                    this.connectionRegisterer,
-                    this.connectionUnregister
-            );
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return newInitializer;
-    }
-
-    // 撤销注入的 channel initializer.
-    @SuppressWarnings("unchecked")
-    public void uninject() {
-    }
-
-    boolean injected() {
-        return this.injected;
     }
 }

@@ -6,6 +6,7 @@ import com.velocitypowered.api.event.connection.PostLoginEvent;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketRegistration;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
@@ -22,8 +23,8 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
     private final CraftEngineVelocityPlugin plugin;
     private final VelocityPacketPipelineInjector pipelineInjector; // 负责 Velocity Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
-    private final ConcurrentMap<Channel, VelocityChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
-    private final ConcurrentMap<SocketAddress, VelocityChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
+    private final ConcurrentMap<Channel, ChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
+    private final ConcurrentMap<SocketAddress, ChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
     private volatile boolean loaded;
 
     public VelocityPacketListenerManager(CraftEngineVelocityPlugin plugin) {
@@ -72,7 +73,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         this.pipelineInjector.uninject();
 
         // 已经建立的 Channel 不会重新经过 initializer, 需要主动移除 handler
-        for (VelocityChannelConnection connection : this.connectionsByChannel.values()) {
+        for (ChannelConnection connection : this.connectionsByChannel.values()) {
             Channel channel = connection.channel();
             if (channel.isOpen()) {
                 channel.eventLoop().execute(() -> VelocityPacketPipelineInjector.removeHandlers(channel));
@@ -85,7 +86,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
     @Subscribe
     public void onPostLogin(PostLoginEvent event) {
         // Netty channel 早于 Velocity player 创建, 登录后再绑定玩家对象
-        VelocityChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getRemoteAddress());
+        ChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getRemoteAddress());
         if (connection == null) {
             return;
         }
@@ -96,13 +97,13 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
     @Subscribe
     public void onDisconnect(DisconnectEvent event) {
         // 保留连接对象到 Channel 关闭, 这里只解除玩家引用
-        VelocityChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getRemoteAddress());
+        ChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getRemoteAddress());
         if (connection != null) {
             connection.unbind(event.getPlayer().getUniqueId());
         }
     }
 
-    private void addConnection(VelocityChannelConnection connection) {
+    private void addConnection(ChannelConnection connection) {
         Channel channel = connection.channel();
         this.connectionsByChannel.put(channel, connection);
         SocketAddress remoteAddress = channel.remoteAddress();
@@ -111,7 +112,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         }
     }
 
-    private void removeConnection(VelocityChannelConnection connection) {
+    private void removeConnection(ChannelConnection connection) {
         Channel channel = connection.channel();
         this.connectionsByChannel.remove(channel);
         SocketAddress remoteAddress = channel.remoteAddress();
@@ -130,7 +131,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         return this.plugin;
     }
 
-    private ByteBuf handlePacket(VelocityChannelConnection context, PacketSide side, ByteBuf buffer) {
+    private ByteBuf handlePacket(ChannelConnection context, PacketSide side, ByteBuf buffer) {
         return this.handle(context.connection(), context.player(), side, buffer);
     }
 

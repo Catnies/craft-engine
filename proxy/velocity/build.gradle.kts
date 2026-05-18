@@ -11,8 +11,6 @@ repositories {
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.gtemc.net/releases/")
     maven("https://repo.papermc.io/repository/maven-public/")
-    maven("https://repo.codemc.io/repository/maven-releases/")
-    maven("https://repo.codemc.io/repository/maven-snapshots/")
 }
 
 dependencies {

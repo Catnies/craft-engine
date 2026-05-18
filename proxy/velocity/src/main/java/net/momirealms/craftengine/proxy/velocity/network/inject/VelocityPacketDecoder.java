@@ -5,19 +5,20 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.ReferenceCountUtil;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
-import net.momirealms.craftengine.proxy.velocity.network.VelocityChannelConnection;
 
 import java.util.List;
 
 @ChannelHandler.Sharable
 final class VelocityPacketDecoder extends MessageToMessageDecoder<ByteBuf> {
-    private final VelocityPacketSink packetSink;
-    private final VelocityChannelConnection connection;
+    private final ProxyPacketSink packetSink;
+    private final ChannelConnection connection;
     private boolean relocated; // compression 启用后只重排一次
 
-    VelocityPacketDecoder(VelocityPacketSink packetSink, VelocityChannelConnection connection) {
+    VelocityPacketDecoder(ProxyPacketSink packetSink, ChannelConnection connection) {
         this.packetSink = packetSink;
         this.connection = connection;
         // 如果没有启用数据包压缩, 则直接标记, 无需触发重排.

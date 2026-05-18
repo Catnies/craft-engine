@@ -4,7 +4,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
-import net.momirealms.craftengine.proxy.bungeecord.network.BungeeChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
@@ -16,16 +17,16 @@ final class BungeeChannelInitializer extends ChannelInitializer<Channel> {
 
     private final BungeePacketPipelineInjector injector;
     private final ChannelInitializer<Channel> wrappedInitializer;
-    private final BungeePacketSink packetSink;
-    private final Consumer<BungeeChannelConnection> connectionRegisterer;
-    private final Consumer<BungeeChannelConnection> connectionUnregister;
+    private final ProxyPacketSink packetSink;
+    private final Consumer<ChannelConnection> connectionRegisterer;
+    private final Consumer<ChannelConnection> connectionUnregister;
 
     BungeeChannelInitializer(
             BungeePacketPipelineInjector injector,
             ChannelInitializer<Channel> wrappedInitializer,
-            BungeePacketSink packetSink,
-            Consumer<BungeeChannelConnection> connectionRegisterer,
-            Consumer<BungeeChannelConnection> connectionUnregister
+            ProxyPacketSink packetSink,
+            Consumer<ChannelConnection> connectionRegisterer,
+            Consumer<ChannelConnection> connectionUnregister
     ) {
         this.injector = injector;
         this.wrappedInitializer = wrappedInitializer;
@@ -42,7 +43,7 @@ final class BungeeChannelInitializer extends ChannelInitializer<Channel> {
             return;
         }
         // 连接状态从 channel 创建时开始记录, 后续再绑定到 ProxyPlayer
-        BungeeChannelConnection connection = new BungeeChannelConnection(channel);
+        ChannelConnection connection = new ChannelConnection(channel);
         this.connectionRegisterer.accept(connection);
         BungeePacketPipelineInjector.addTo(channel, this.packetSink, connection);
         channel.closeFuture().addListener((ChannelFutureListener) future -> this.connectionUnregister.accept(connection));

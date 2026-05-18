@@ -4,7 +4,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
-import net.momirealms.craftengine.proxy.velocity.network.VelocityChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
@@ -16,16 +17,16 @@ final class VelocityChannelInitializer extends ChannelInitializer<Channel> {
 
     private final VelocityPacketPipelineInjector injector;
     private final ChannelInitializer<Channel> wrappedInitializer;
-    private final VelocityPacketSink packetSink;
-    private final Consumer<VelocityChannelConnection> connectionRegisterer;
-    private final Consumer<VelocityChannelConnection> connectionUnregister;
+    private final ProxyPacketSink packetSink;
+    private final Consumer<ChannelConnection> connectionRegisterer;
+    private final Consumer<ChannelConnection> connectionUnregister;
 
     VelocityChannelInitializer(
             VelocityPacketPipelineInjector injector,
             ChannelInitializer<Channel> wrappedInitializer,
-            VelocityPacketSink packetSink,
-            Consumer<VelocityChannelConnection> connectionRegisterer,
-            Consumer<VelocityChannelConnection> connectionUnregister
+            ProxyPacketSink packetSink,
+            Consumer<ChannelConnection> connectionRegisterer,
+            Consumer<ChannelConnection> connectionUnregister
     ) {
         this.injector = injector;
         this.wrappedInitializer = wrappedInitializer;
@@ -42,7 +43,7 @@ final class VelocityChannelInitializer extends ChannelInitializer<Channel> {
             return;
         }
         // 连接状态从 channel 创建时开始记录, 后续再绑定到 ProxyPlayer
-        VelocityChannelConnection connection = new VelocityChannelConnection(channel);
+        ChannelConnection connection = new ChannelConnection(channel);
         this.connectionRegisterer.accept(connection);
         VelocityPacketPipelineInjector.addTo(channel, this.packetSink, connection);
         channel.closeFuture().addListener((ChannelFutureListener) future -> this.connectionUnregister.accept(connection));

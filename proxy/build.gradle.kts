@@ -8,8 +8,6 @@ repositories {
     maven("https://libraries.minecraft.net/")
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.gtemc.net/releases/")
-    maven("https://repo.codemc.io/repository/maven-releases/")
-    maven("https://repo.codemc.io/repository/maven-snapshots/")
 }
 
 dependencies {

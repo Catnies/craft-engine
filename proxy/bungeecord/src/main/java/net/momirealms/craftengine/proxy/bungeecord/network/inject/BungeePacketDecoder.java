@@ -3,22 +3,22 @@ package net.momirealms.craftengine.proxy.bungeecord.network.inject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.ReferenceCountUtil;
 import net.md_5.bungee.api.ProxyServer;
-import net.momirealms.craftengine.proxy.bungeecord.network.BungeeChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 
 import java.util.List;
 
 @ChannelHandler.Sharable
 final class BungeePacketDecoder extends MessageToMessageDecoder<ByteBuf> {
-    private final BungeePacketSink packetSink;
-    private final BungeeChannelConnection connection;
+    private final ProxyPacketSink packetSink;
+    private final ChannelConnection connection;
     private boolean relocated; // compression 启用后只重排一次
 
-    BungeePacketDecoder(BungeePacketSink packetSink, BungeeChannelConnection connection) {
+    BungeePacketDecoder(ProxyPacketSink packetSink, ChannelConnection connection) {
         this.packetSink = packetSink;
         this.connection = connection;
         // 如果没有启用数据包压缩, 则直接标记, 无需触发重排.
@@ -41,10 +41,7 @@ final class BungeePacketDecoder extends MessageToMessageDecoder<ByteBuf> {
     @Override
     public void userEventTriggered(ChannelHandlerContext context, Object event) throws Exception {
         // BungeeCord 启用压缩会重建 codec 顺序, 需要把捕获 handler 放回 codec 前
-        ChannelPipeline pipe = context.pipeline();
-        List<String> pipeNames = pipe.names();
-        int decompressorIndex = pipeNames.indexOf("decompress");
-        if (!this.relocated && decompressorIndex != -1) {
+        if (!this.relocated && context.pipeline().names().contains("decompress")) {
             this.relocated = true;
             BungeePacketPipelineInjector.relocate(context.pipeline());
         }

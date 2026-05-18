@@ -5,17 +5,18 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.ReferenceCountUtil;
-import net.momirealms.craftengine.proxy.bungeecord.network.BungeeChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.packet.ProxyPacketSink;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 
 import java.util.List;
 
 @ChannelHandler.Sharable
 final class BungeePacketEncoder extends MessageToMessageEncoder<ByteBuf> {
-    private final BungeePacketSink packetSink;
-    private final BungeeChannelConnection connection;
+    private final ProxyPacketSink packetSink;
+    private final ChannelConnection connection;
 
-    BungeePacketEncoder(BungeePacketSink packetSink, BungeeChannelConnection connection) {
+    BungeePacketEncoder(ProxyPacketSink packetSink, ChannelConnection connection) {
         this.packetSink = packetSink;
         this.connection = connection;
     }
