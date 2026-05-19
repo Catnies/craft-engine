@@ -11,7 +11,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":core"))
     nbt(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
     netty(project, JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME)
     adventure(project, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)

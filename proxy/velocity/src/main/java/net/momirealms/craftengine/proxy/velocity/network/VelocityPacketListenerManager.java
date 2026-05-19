@@ -41,7 +41,6 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         this.load();
     }
 
-    @Override
     public void load() {
         if (this.loaded) {
             return;
@@ -58,7 +57,6 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         this.pipelineInjector.inject();
     }
 
-    @Override
     public void disable() {
         if (!this.loaded) {
             return;
@@ -82,14 +80,6 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         }
         this.connectionsByChannel.clear();
         this.connectionsByAddress.clear();
-    }
-
-    @Subscribe
-    public void onPreLogin(PreLoginEvent event) {
-        int protocolVersion = event.getConnection().getProtocolVersion().getProtocol();
-        if (PacketListenerManager.isUnsupportedClientProtocolVersion(protocolVersion)) {
-            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text(PacketListenerManager.unsupportedClientVersionMessage())));
-        }
     }
 
     @Subscribe

@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.font;
+package net.momirealms.craftengine.proxy.common.text.font;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
 public final class OffsetFont {
-    public final net.momirealms.craftengine.core.util.Key font;
     public final Key fontKey;
 
     public final String NEG_16;
@@ -37,12 +36,11 @@ public final class OffsetFont {
             .build();
 
     public OffsetFont(
-            net.momirealms.craftengine.core.util.Key font,
+            net.momirealms.craftengine.proxy.common.util.Key font,
             String neg16, String neg24, String neg32, String neg48, String neg64, String neg128, String neg256,
             String pos16, String pos24, String pos32, String pos48, String pos64, String pos128, String pos256,
             String[] negativeOffsets, String[] positiveOffsets
     ) {
-        this.font = font;
         this.fontKey = Key.key(font.namespace(), font.value());
         this.NEG_16 = neg16;
         this.NEG_24 = neg24;
@@ -62,10 +60,6 @@ public final class OffsetFont {
         this.positiveOffsets = positiveOffsets;
     }
 
-    public net.momirealms.craftengine.core.util.Key font() {
-        return font;
-    }
-
     public Component createOffset(int offset) {
         if (offset == 0) return Component.empty();
         return Component.text(Objects.requireNonNull(this.fastLookup.get(offset, k -> k > 0 ? createPos(k) : createNeg(-k)))).font(this.fontKey);
@@ -73,7 +67,7 @@ public final class OffsetFont {
 
     public String createOffset(int offset, BiFunction<String, String, String> tagDecorator) {
         if (offset == 0) return "";
-        return tagDecorator.apply(this.fastLookup.get(offset, k -> k > 0 ? createPos(k) : createNeg(-k)), this.font.asString());
+        return tagDecorator.apply(this.fastLookup.get(offset, k -> k > 0 ? createPos(k) : createNeg(-k)), this.fontKey.asString());
     }
 
     @SuppressWarnings("DuplicatedCode")

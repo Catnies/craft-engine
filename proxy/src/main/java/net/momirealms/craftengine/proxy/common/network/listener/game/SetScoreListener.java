@@ -26,7 +26,7 @@ public final class SetScoreListener {
 
     public static void register(PacketHandlerRegistry registry, ProxyCraftEngine plugin) {
         PacketRoute route = PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.UPDATE_SCORE);
-        registry.register(route, new Handler(plugin));
+        registry.registerSince(route, ClientVersion.V_1_20_3, new Handler(plugin));
     }
 
     private static final class Handler implements PacketHandler {

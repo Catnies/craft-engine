@@ -2,7 +2,6 @@ package net.momirealms.craftengine.proxy.common.network.listener;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.network.listener.game.*;
@@ -19,10 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class PacketListenerManager implements Manageable {
-    private static final String UNSUPPORTED_CLIENT_VERSION_MESSAGE = "[CraftEngine-Proxy] Unsupported Minecraft Client Version, Support Version is "
-            + ClientVersion.getOldest().getReleaseName() + " - " + ClientVersion.getLatest().getReleaseName() + "!";
-
+public abstract class PacketListenerManager {
     protected final PacketHandlerRegistry packetRegistry;
     protected final List<PacketRegistration> internalRegistrations = new ArrayList<>(); // 内部协议状态监听
 
@@ -110,7 +106,7 @@ public abstract class PacketListenerManager implements Manageable {
             packetId = payload.readVarInt();
             int payloadIndex = payload.readerIndex();
             ConnectionState state = connection.getConnectionState(side);
-            ClientVersion clientVersion = connection.clientVersion();
+            ClientVersion clientVersion = connection.clientVersion();  // 只处理插件支持版本的包 （1.20 ~ ..ClientVersion.latest（））
             PacketHandler packetHandler = this.packetRegistry().getPacketHandler(side, state, clientVersion, packetId);
             if (packetHandler == null) {
                 payload.readerIndex(preProcessIndex);
@@ -153,10 +149,6 @@ public abstract class PacketListenerManager implements Manageable {
 
     public static boolean isUnsupportedClientProtocolVersion(int protocolVersion) {
         return !ClientVersion.isRelease(protocolVersion);
-    }
-
-    public static String unsupportedClientVersionMessage() {
-        return UNSUPPORTED_CLIENT_VERSION_MESSAGE;
     }
 
     public abstract ErrorHandler errorHandler();

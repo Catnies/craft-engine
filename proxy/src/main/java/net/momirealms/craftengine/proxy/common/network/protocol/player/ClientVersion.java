@@ -115,9 +115,9 @@ public enum ClientVersion {
         }
     }
 
-    public static boolean isPreRelease(int protocolVersion) {
-        return getLatest().protocolVersion <= protocolVersion
-                || getOldest().protocolVersion >= protocolVersion;
+    public static boolean isUnsupported(int protocolVersion) {
+        return getLatest().protocolVersion < protocolVersion
+                || getOldest().protocolVersion > protocolVersion;
     }
 
     public static boolean isRelease(int protocolVersion) {
@@ -125,8 +125,8 @@ public enum ClientVersion {
                 && protocolVersion >= getOldest().protocolVersion;
     }
 
-    public boolean isPreRelease() {
-        return isPreRelease(protocolVersion);
+    public boolean isUnsupported() {
+        return isUnsupported(protocolVersion);
     }
 
     public boolean isRelease() {
@@ -152,9 +152,9 @@ public enum ClientVersion {
     @NotNull
     public static ClientVersion getById(int protocolVersion) {
         if (protocolVersion < LOWEST_SUPPORTED_PROTOCOL_VERSION) {
-            return getOldest();
+            return ClientVersion.LOWER_THAN_SUPPORTED_VERSIONS;
         } else if (protocolVersion > HIGHEST_SUPPORTED_PROTOCOL_VERSION) {
-            return getLatest();
+            return ClientVersion.HIGHER_THAN_SUPPORTED_VERSIONS;
         } else {
             for (ClientVersion version : VALUES) {
                 if (version.protocolVersion > protocolVersion) {

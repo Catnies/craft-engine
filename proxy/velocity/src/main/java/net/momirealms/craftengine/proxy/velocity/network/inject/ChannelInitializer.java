@@ -2,9 +2,9 @@ package net.momirealms.craftengine.proxy.velocity.network.inject;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
-import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
+import net.momirealms.craftengine.proxy.common.util.ReflectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;

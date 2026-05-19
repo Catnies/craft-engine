@@ -7,13 +7,12 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import net.momirealms.craftengine.proxy.velocity.VelocityCraftEngine;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 
-public class VelocityNetworkTagDataBridge implements Manageable {
+public class VelocityNetworkTagDataBridge{
     public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetworkTagDataSyncService.TAG_DATA_CHANNEL);
     private final VelocityCraftEngine plugin;
     private final NetworkTagDataSyncService networkTagDataSyncService;
@@ -28,13 +27,11 @@ public class VelocityNetworkTagDataBridge implements Manageable {
         return this.networkTagDataSyncService;
     }
 
-    @Override
     public void load() {
         this.plugin.server.getChannelRegistrar().register(IDENTIFIER);
         this.plugin.server.getEventManager().register(this.plugin, this);
     }
 
-    @Override
     public void disable() {
         this.plugin.server.getChannelRegistrar().unregister(IDENTIFIER);
         this.plugin.server.getEventManager().unregisterListener(this.plugin, this);

@@ -8,13 +8,6 @@ import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import io.netty.util.ByteProcessor;
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.core.registry.Registry;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.GlobalPos;
-import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.sparrow.nbt.NBT;
 import net.momirealms.sparrow.nbt.Tag;
@@ -51,7 +44,7 @@ public class ProxyByteBuf extends ByteBuf {
     }
 
     public Component readComponent(ClientVersion clientVersion) {
-        if (VersionHelper.isOrAbove1_20_3) {
+        if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_20_3)) {
             return AdventureHelper.nbtToComponent(clientVersion, this.readNbt(false));
         } else {
             return AdventureHelper.jsonToComponent(clientVersion, this.readUtf(262144));
@@ -59,7 +52,7 @@ public class ProxyByteBuf extends ByteBuf {
     }
 
     public void writeComponent(ClientVersion clientVersion, Component component) {
-        if (VersionHelper.isOrAbove1_20_3) {
+        if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_20_3)) {
             this.writeNbt(AdventureHelper.componentToNbt(clientVersion, component), false);
         } else {
             this.writeUtf(AdventureHelper.componentToJson(clientVersion, component));
@@ -121,10 +114,6 @@ public class ProxyByteBuf extends ByteBuf {
         }
     }
 
-    public BlockPos readBlockPos() {
-        return BlockPos.of(this.readLong());
-    }
-
     public OptionalInt readOptionalVarInt() {
         int i = this.readVarInt();
         return i == 0 ? OptionalInt.empty() : OptionalInt.of(i - 1);
@@ -139,12 +128,12 @@ public class ProxyByteBuf extends ByteBuf {
         }
     }
 
-    public int readContainerId() {
-        return VersionHelper.isOrAbove1_21_2 ? this.readVarInt() : this.readUnsignedByte();
+    public int readContainerId(ClientVersion clientVersion) {
+        return clientVersion.isNewerThanOrEquals(ClientVersion.V_1_21_2) ? this.readVarInt() : this.readUnsignedByte();
     }
 
-    public void writeContainerId(int id) {
-        if (VersionHelper.isOrAbove1_21_2) {
+    public void writeContainerId(ClientVersion clientVersion, int id) {
+        if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_21_2)) {
             this.writeVarInt(id);
         } else {
             this.writeByte(id);
@@ -165,11 +154,6 @@ public class ProxyByteBuf extends ByteBuf {
         for (String s : list) {
             writeUtf(s);
         }
-    }
-
-    public ProxyByteBuf writeBlockPos(BlockPos pos) {
-        this.writeLong(pos.asLong());
-        return this;
     }
 
     public static int getVarIntSize(int value) {
@@ -405,15 +389,6 @@ public class ProxyByteBuf extends ByteBuf {
         return byteArray;
     }
 
-    public <T> T readById(Registry<T> registry) {
-        int id = this.readVarInt();
-        return registry.getValue(id);
-    }
-
-    public <T> void writeById(Registry<T> registry, T value) {
-        this.writeVarInt(registry.getId(value));
-    }
-
     public int readVarInt() {
         int value = 0;
         int shift = 0;
@@ -580,69 +555,6 @@ public class ProxyByteBuf extends ByteBuf {
 
     public ProxyByteBuf writeEnumConstant(Enum<?> instance) {
         return this.writeVarInt(instance.ordinal());
-    }
-
-    public Vec3d readLpVec3() {
-        int unsignedByte = this.readUnsignedByte();
-        if (unsignedByte == 0) {
-            return Vec3d.ZERO;
-        } else {
-            int unsignedByte1 = this.readUnsignedByte();
-            long unsignedInt = this.readUnsignedInt();
-            long l = unsignedInt << 16 | (long) (unsignedByte1 << 8) | (long) unsignedByte;
-            long l1 = unsignedByte & 3;
-            if ((unsignedByte & 4) == 4) {
-                l1 |= ((long) this.readVarInt() & 4294967295L) << 2;
-            }
-            return new Vec3d(
-                    (Math.min((double) ((l >> 3) & 32767L), (double) 32766.0F) * (double) 2.0F / (double) 32766.0F - (double) 1.0F) * (double) l1,
-                    (Math.min((double) ((l >> 18) & 32767L), (double) 32766.0F) * (double) 2.0F / (double) 32766.0F - (double) 1.0F) * (double) l1,
-                    (Math.min((double) ((l >> 33) & 32767L), (double) 32766.0F) * (double) 2.0F / (double) 32766.0F - (double) 1.0F) * (double) l1
-            );
-        }
-    }
-
-    public void writeLpVec3(Vec3d vec3) {
-        double d = Double.isNaN(vec3.x) ? (double) 0.0F : Math.clamp(vec3.x, -1.7179869183E10, 1.7179869183E10);
-        double d1 = Double.isNaN(vec3.y) ? (double) 0.0F : Math.clamp(vec3.y, -1.7179869183E10, 1.7179869183E10);
-        double d2 = Double.isNaN(vec3.z) ? (double) 0.0F : Math.clamp(vec3.z, -1.7179869183E10, 1.7179869183E10);
-        double max = MiscUtils.absMax(d, MiscUtils.absMax(d1, d2));
-        if (max < 3.051944088384301E-5) {
-            this.writeByte(0);
-        } else {
-            long l = MiscUtils.ceilLong(max);
-            boolean flag = (l & 3L) != l;
-            long l1 = flag ? l & 3L | 4L : l;
-            long l2 = (Math.round(((d / (double) l) * (double) 0.5F + (double) 0.5F) * (double) 32766.0F)) << 3;
-            long l3 = (Math.round(((d1 / (double) l) * (double) 0.5F + (double) 0.5F) * (double) 32766.0F)) << 18;
-            long l4 = (Math.round(((d2 / (double) l) * (double) 0.5F + (double) 0.5F) * (double) 32766.0F)) << 33;
-            long l5 = l1 | l2 | l3 | l4;
-            this.writeByte((byte) ((int) l5));
-            this.writeByte((byte) ((int) (l5 >> 8)));
-            this.writeInt((int) (l5 >> 16));
-            if (flag) {
-                this.writeVarInt((int) (l >> 2));
-            }
-        }
-    }
-
-    public Vec3d readVec3() {
-        return new Vec3d(this.readDouble(), this.readDouble(), this.readDouble());
-    }
-
-    public void writeVec3(Vec3d vec3) {
-        this.writeDouble(vec3.x);
-        this.writeDouble(vec3.y);
-        this.writeDouble(vec3.z);
-    }
-
-    public GlobalPos readGlobalPos() {
-        return GlobalPos.of(this.readKey(), this.readBlockPos());
-    }
-
-    public void writeGlobalPos(GlobalPos pos) {
-        this.writeKey(pos.dimension);
-        this.writeBlockPos(pos.pos);
     }
 
     public byte[] readFixedBytes(int length) {

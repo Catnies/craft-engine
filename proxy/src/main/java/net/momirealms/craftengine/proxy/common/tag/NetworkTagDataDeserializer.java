@@ -1,12 +1,11 @@
 package net.momirealms.craftengine.proxy.common.tag;
 
-import net.momirealms.craftengine.core.font.*;
-import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.LazyReference;
+import net.momirealms.craftengine.proxy.common.text.font.*;
+import net.momirealms.craftengine.proxy.common.text.locale.ServerLangData;
+import net.momirealms.craftengine.proxy.common.util.Key;
+import net.momirealms.craftengine.proxy.common.util.LazyReference;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -88,7 +87,7 @@ public final class NetworkTagDataDeserializer {
             }
         }
 
-        return new BitmapImage(id, font, 0, 0, "", codepointGrid);
+        return new BitmapImage(id, font, codepointGrid);
     }
 
     private static ReferenceImage readReferenceImage(ProxyByteBuf buf, NetworkTagDataRegistry registry, String serverName) {

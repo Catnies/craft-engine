@@ -4,11 +4,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import net.md_5.bungee.api.ProxyServer;
-import net.momirealms.craftengine.core.util.ReflectionUtils;
-import net.momirealms.craftengine.core.util.SetMonitor;
 import net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
+import net.momirealms.craftengine.proxy.common.util.ReflectionUtils;
+import net.momirealms.craftengine.proxy.common.util.SetMonitor;
 
 import java.lang.reflect.Field;
 import java.util.Set;

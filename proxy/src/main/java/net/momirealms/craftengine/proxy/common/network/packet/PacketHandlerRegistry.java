@@ -110,10 +110,13 @@ public final class PacketHandlerRegistry {
     }
 
     public @Nullable PacketHandler getPacketHandler(PacketSide side, ConnectionState state, ClientVersion version, int packetId) {
-        if (side == null || state == null || packetId < 0) {
+        if (side == null || state == null || packetId < 0 || version == null) {
             return null;
         }
-        ClientVersion mappedVersion = version == null || !version.isRelease() ? ClientVersion.getLatest() : version;
+        ClientVersion mappedVersion = version == ClientVersion.UNKNOWN ? ClientVersion.getLatest() : version;
+        if (mappedVersion.isUnsupported()) {
+            return null;
+        }
         PacketHandler[] packetHandlers = this.handlers[side.ordinal()][state.ordinal()][mappedVersion.ordinal()];
         if (packetHandlers == null || packetId >= packetHandlers.length) {
             return null;

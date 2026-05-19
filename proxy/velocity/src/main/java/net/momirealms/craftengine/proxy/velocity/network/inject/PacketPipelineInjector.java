@@ -3,9 +3,9 @@ package net.momirealms.craftengine.proxy.velocity.network.inject;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
+import net.momirealms.craftengine.proxy.common.util.ReflectionUtils;
 import net.momirealms.craftengine.proxy.velocity.VelocityCraftEngine;
 
 import java.lang.reflect.Field;

@@ -4,7 +4,6 @@ import io.netty.channel.Channel;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine;
@@ -42,7 +41,6 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         this.load();
     }
 
-    @Override
     public void load() {
         if (this.loaded) {
             return;
@@ -59,7 +57,6 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         this.pipelineInjector.inject();
     }
 
-    @Override
     public void disable() {
         if (!this.loaded) {
             return;
@@ -83,15 +80,6 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         }
         this.connectionsByChannel.clear();
         this.connectionsByAddress.clear();
-    }
-
-    @EventHandler
-    public void onPreLogin(PreLoginEvent event) {
-        int protocolVersion = event.getConnection().getVersion();
-        if (PacketListenerManager.isUnsupportedClientProtocolVersion(protocolVersion)) {
-            event.setCancelReason(PacketListenerManager.unsupportedClientVersionMessage());
-            event.setCancelled(true);
-        }
     }
 
     @EventHandler

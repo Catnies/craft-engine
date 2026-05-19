@@ -1,11 +1,11 @@
 package net.momirealms.craftengine.proxy.common.network.packet;
 
 import io.netty.buffer.ByteBuf;
-import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketTypeCommon;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
+import net.momirealms.craftengine.proxy.common.util.Cancellable;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import org.jetbrains.annotations.Nullable;
 

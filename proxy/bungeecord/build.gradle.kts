@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":core"))
     implementation(project(":proxy"))
     netty(project)
     // Platform

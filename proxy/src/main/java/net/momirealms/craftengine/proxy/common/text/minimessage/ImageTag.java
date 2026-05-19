@@ -5,9 +5,9 @@ import net.kyori.adventure.text.minimessage.ParsingException;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.momirealms.craftengine.core.font.Image;
-import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagData;
+import net.momirealms.craftengine.proxy.common.text.font.Image;
+import net.momirealms.craftengine.proxy.common.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

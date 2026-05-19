@@ -3,17 +3,17 @@ package net.momirealms.craftengine.proxy.common.tag;
 import net.kyori.adventure.text.minimessage.internal.parser.Token;
 import net.kyori.adventure.text.minimessage.internal.parser.TokenParser;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.momirealms.craftengine.core.font.BitmapImage;
-import net.momirealms.craftengine.core.font.Image;
-import net.momirealms.craftengine.core.font.OffsetFont;
-import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.StringValueOnlyTagVisitor;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
+import net.momirealms.craftengine.proxy.common.text.font.BitmapImage;
+import net.momirealms.craftengine.proxy.common.text.font.Image;
+import net.momirealms.craftengine.proxy.common.text.font.OffsetFont;
+import net.momirealms.craftengine.proxy.common.text.locale.ServerLangData;
 import net.momirealms.craftengine.proxy.common.text.minimessage.GlobalVariableTag;
 import net.momirealms.craftengine.proxy.common.text.minimessage.ImageTag;
 import net.momirealms.craftengine.proxy.common.text.minimessage.ShiftTag;
+import net.momirealms.craftengine.proxy.common.util.Key;
+import net.momirealms.craftengine.proxy.common.util.MiscUtils;
+import net.momirealms.craftengine.proxy.common.util.StringValueOnlyTagVisitor;
 import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +65,7 @@ public class NetworkTagData {
                 it.put(shiftTag(i), ComponentProvider.constant(NetworkTagData.this.offset.createOffset(i)));
             }
             for (String key : this.l10n.keySet()) {
-                it.put(l10nTag(key), ComponentProvider.l10n(key));
+                it.put(l10nTag(key), ComponentProvider.l10n(key, this));
             }
             for (Map.Entry<String, String> entry : this.globalVariables.entrySet()) {
                 String globalTag = globalTag(entry.getKey());
