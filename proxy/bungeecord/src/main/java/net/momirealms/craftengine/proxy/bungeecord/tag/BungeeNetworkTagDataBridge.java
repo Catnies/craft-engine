@@ -8,7 +8,7 @@ import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.momirealms.craftengine.core.plugin.Manageable;
-import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
@@ -16,10 +16,10 @@ import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 public class BungeeNetworkTagDataBridge implements Manageable, Listener {
     public static final String IDENTIFIER = NetworkTagDataSyncService.TAG_DATA_CHANNEL;
 
-    private final BungeeCord plugin;
+    private final BungeeCordCraftEngine plugin;
     private final NetworkTagDataSyncService networkTagDataSyncService;
 
-    public BungeeNetworkTagDataBridge(BungeeCord plugin) {
+    public BungeeNetworkTagDataBridge(BungeeCordCraftEngine plugin) {
         this.plugin = plugin;
         this.networkTagDataSyncService = new NetworkTagDataSyncService(plugin);
         this.load();

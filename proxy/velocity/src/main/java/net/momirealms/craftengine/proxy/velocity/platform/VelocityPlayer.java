@@ -7,7 +7,7 @@ import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
-import net.momirealms.craftengine.proxy.velocity.Velocity;
+import net.momirealms.craftengine.proxy.velocity.VelocityCraftEngine;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class VelocityPlayer implements ProxyPlayer {
     }
 
     public static VelocityPlayer wrap(Player platform) {
-        return Velocity.INSTANCE.playerManager().wrapper(platform);
+        return VelocityCraftEngine.INSTANCE.wrap(platform);
     }
 
     @Override

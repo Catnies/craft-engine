@@ -6,7 +6,7 @@ import io.netty.channel.ChannelPipeline;
 import net.md_5.bungee.api.ProxyServer;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.SetMonitor;
-import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 
@@ -21,7 +21,7 @@ public final class PacketPipelineInjector {
     private static final String PACKET_DECODER = "craftengine_proxy_packet_decoder";
     private static final String PACKET_ENCODER = "craftengine_proxy_packet_encoder";
     private static final Field LISTENERS_FIELD;
-    private final BungeeCord plugin;
+    private final BungeeCordCraftEngine plugin;
     private final PacketSink packetSink; // raw ByteBuf 捕获回调
     private final Consumer<ChannelConnection> connectionRegisterer; // 新 Channel 注册回调
     private final Consumer<ChannelConnection> connectionUnregister; // Channel 关闭清理回调
@@ -32,7 +32,7 @@ public final class PacketPipelineInjector {
     }
 
     public PacketPipelineInjector(
-            BungeeCord plugin,
+            BungeeCordCraftEngine plugin,
             PacketSink packetSink,
             Consumer<ChannelConnection> connectionRegisterer,
             Consumer<ChannelConnection> connectionUnregister

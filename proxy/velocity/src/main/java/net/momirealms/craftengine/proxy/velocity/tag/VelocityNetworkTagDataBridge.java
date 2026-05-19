@@ -10,15 +10,15 @@ import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
-import net.momirealms.craftengine.proxy.velocity.Velocity;
+import net.momirealms.craftengine.proxy.velocity.VelocityCraftEngine;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 
 public class VelocityNetworkTagDataBridge implements Manageable {
     public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetworkTagDataSyncService.TAG_DATA_CHANNEL);
-    private final Velocity plugin;
+    private final VelocityCraftEngine plugin;
     private final NetworkTagDataSyncService networkTagDataSyncService;
 
-    public VelocityNetworkTagDataBridge(Velocity plugin) {
+    public VelocityNetworkTagDataBridge(VelocityCraftEngine plugin) {
         this.plugin = plugin;
         this.networkTagDataSyncService = new NetworkTagDataSyncService(plugin);
         this.load();

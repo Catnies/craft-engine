@@ -2,22 +2,28 @@ package net.momirealms.craftengine.proxy.velocity;
 
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import net.momirealms.craftengine.proxy.velocity.network.VelocityPacketListenerManager;
-import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayerManager;
+import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 import net.momirealms.craftengine.proxy.velocity.tag.VelocityNetworkTagDataBridge;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Plugin(
         id = "craftengine",
@@ -25,18 +31,18 @@ import java.nio.file.Path;
         version = "1.0.0-SNAPSHOT",
         authors = {"Catnies"}
 )
-public class Velocity implements ProxyCraftEngine {
-    public static Velocity INSTANCE;
+public class VelocityCraftEngine implements ProxyCraftEngine {
+    public static VelocityCraftEngine INSTANCE;
     public final ProxyServer server;
     public final Logger logger;
     public final PluginContainer pluginContainer;
     public final Path dataDirectory;
-    private VelocityPlayerManager playerManager;
+    private final Map<UUID, VelocityPlayer> players = new ConcurrentHashMap<>();
     private VelocityPacketListenerManager packetListenerManager;
     private VelocityNetworkTagDataBridge networkTagDataBridge;
 
     @Inject
-    public Velocity(ProxyServer server, Logger logger, PluginContainer pluginContainer, @DataDirectory Path dataDirectory) {
+    public VelocityCraftEngine(ProxyServer server, Logger logger, PluginContainer pluginContainer, @DataDirectory Path dataDirectory) {
         INSTANCE = this;
         this.server = server;
         this.logger = logger;
@@ -47,17 +53,41 @@ public class Velocity implements ProxyCraftEngine {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         AdventureHelper.init();
-        this.playerManager = new VelocityPlayerManager(this);
         this.packetListenerManager = new VelocityPacketListenerManager(this);
         this.networkTagDataBridge = new VelocityNetworkTagDataBridge(this);
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
-        if (this.playerManager != null) this.playerManager.disable();
         if (this.networkTagDataBridge != null) this.networkTagDataBridge.disable();
         if (this.packetListenerManager != null) this.packetListenerManager.disable();
+        if (!this.players.isEmpty()) this.players.clear();
         this.server.getEventManager().unregisterListeners(this);
+    }
+
+    @Subscribe
+    public void onDisconnect(DisconnectEvent event) {
+        this.players.remove(event.getPlayer().getUniqueId());
+    }
+
+    @Override
+    public @Nullable VelocityPlayer getOrWrapperPlayer(UUID uuid) {
+        VelocityPlayer player = this.players.get(uuid);
+        if (player != null) {
+            return player;
+        }
+        return this.server.getPlayer(uuid)
+                .map(this::wrap)
+                .orElse(null);
+    }
+
+    @Override
+    public @Nullable VelocityPlayer getPlayer(UUID uuid) {
+        return this.players.get(uuid);
+    }
+
+    public VelocityPlayer wrap(Player platform) {
+        return this.players.computeIfAbsent(platform.getUniqueId(), uuid ->  new VelocityPlayer(platform));
     }
 
     @Override
@@ -68,11 +98,6 @@ public class Velocity implements ProxyCraftEngine {
     @Override
     public Path dataFolderPath() {
         return this.dataDirectory;
-    }
-
-    @Override
-    public VelocityPlayerManager playerManager() {
-        return this.playerManager;
     }
 
     @Override

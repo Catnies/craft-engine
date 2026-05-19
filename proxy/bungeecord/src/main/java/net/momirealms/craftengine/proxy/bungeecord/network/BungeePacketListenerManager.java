@@ -6,7 +6,7 @@ import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine;
 import net.momirealms.craftengine.proxy.bungeecord.network.inject.PacketPipelineInjector;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
@@ -21,14 +21,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class BungeePacketListenerManager extends PacketListenerManager implements Listener {
-    private final BungeeCord plugin;
+    private final BungeeCordCraftEngine plugin;
     private final PacketPipelineInjector pipelineInjector; // 负责 Bungee Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
     private final ConcurrentMap<Channel, ChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
     private final ConcurrentMap<SocketAddress, ChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
     private volatile boolean loaded;
 
-    public BungeePacketListenerManager(BungeeCord plugin) {
+    public BungeePacketListenerManager(BungeeCordCraftEngine plugin) {
         super();
         this.plugin = plugin;
         this.errorHandler = this::handlePacketError;
