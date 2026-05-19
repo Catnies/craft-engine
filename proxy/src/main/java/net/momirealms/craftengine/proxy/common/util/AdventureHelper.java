@@ -11,7 +11,6 @@ import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.momirealms.craftengine.core.plugin.context.Context;
-import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.craftengine.proxy.common.text.component.ComponentProvider;
 import net.momirealms.sparrow.nbt.Tag;
@@ -21,7 +20,6 @@ import net.momirealms.sparrow.reflection.clazz.SparrowClass;
 import net.momirealms.sparrow.reflection.field.matcher.FieldMatcher;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,8 +31,8 @@ public final class AdventureHelper {
     private final MiniMessage miniMessage;
     private final MiniMessage miniMessageStrict;
     private final MiniMessage miniMessageCustom;
-    private final TreeMap<ClientVersion, GsonComponentSerializer> gsonComponentSerializers;
-    private final TreeMap<ClientVersion, NBTComponentSerializer> nbtComponentSerializers;
+    private final Map<ClientVersion, GsonComponentSerializer> gsonComponentSerializers;
+    private final Map<ClientVersion, NBTComponentSerializer> nbtComponentSerializers;
     private final LegacyComponentSerializer legacyComponentSerializer;
 
     static {
@@ -52,17 +50,8 @@ public final class AdventureHelper {
         this.miniMessageStrict = MiniMessage.builder().strict(true).build();
         this.miniMessageCustom = MiniMessage.builder().tags(TagResolver.empty()).build();
         this.legacyComponentSerializer = LegacyComponentSerializer.builder().build();
-        this.gsonComponentSerializers = MiscUtils.init(new TreeMap<>(Comparator.comparingInt(ClientVersion::getProtocolVersion)), it -> {
-            it.put(ClientVersion.V_1_20_3, createGsonSerializer(ClientVersion.V_1_20_3));
-            it.put(ClientVersion.V_1_21_4, createGsonSerializer(ClientVersion.V_1_21_4));
-            it.put(ClientVersion.getLatest(), createGsonSerializer(ClientVersion.getLatest()));
-        });
-        this.nbtComponentSerializers = MiscUtils.init(new TreeMap<>(Comparator.comparingInt(ClientVersion::getProtocolVersion)), it -> {
-            it.put(ClientVersion.V_1_20_2, createNBTSerializer(ClientVersion.V_1_20_2));
-            it.put(ClientVersion.V_1_20_3, createNBTSerializer(ClientVersion.V_1_20_3));
-            it.put(ClientVersion.V_1_21_4, createNBTSerializer(ClientVersion.V_1_21_4));
-            it.put(ClientVersion.getLatest(), createNBTSerializer(ClientVersion.getLatest()));
-        });
+        this.gsonComponentSerializers = createGsonSerializers();
+        this.nbtComponentSerializers = createNBTSerializers();
     }
 
     public static void init() {}
@@ -115,15 +104,11 @@ public final class AdventureHelper {
     }
 
     public static GsonComponentSerializer getGson(ClientVersion clientVersion) {
-        TreeMap<ClientVersion, GsonComponentSerializer> serializers = getInstance().gsonComponentSerializers;
-        Entry<ClientVersion, GsonComponentSerializer> entry = serializers.ceilingEntry(normalizeVersion(clientVersion));
-        return (entry == null ? serializers.lastEntry() : entry).getValue();
+        return getInstance().gsonComponentSerializers.get(normalizeVersion(clientVersion));
     }
 
     public static NBTComponentSerializer getNBT(ClientVersion clientVersion) {
-        TreeMap<ClientVersion, NBTComponentSerializer> serializers = getInstance().nbtComponentSerializers;
-        Entry<ClientVersion, NBTComponentSerializer> entry = serializers.ceilingEntry(normalizeVersion(clientVersion));
-        return (entry == null ? serializers.lastEntry() : entry).getValue();
+        return getInstance().nbtComponentSerializers.get(normalizeVersion(clientVersion));
     }
 
     /**
@@ -189,6 +174,49 @@ public final class AdventureHelper {
             return ClientVersion.getLatest();
         }
         return clientVersion;
+    }
+
+    private static Map<ClientVersion, GsonComponentSerializer> createGsonSerializers() {
+        GsonComponentSerializer legacySerializer = createGsonSerializer(ClientVersion.V_1_20_3);
+        GsonComponentSerializer preModernEventSerializer = createGsonSerializer(ClientVersion.V_1_21_4);
+        GsonComponentSerializer latestSerializer = createGsonSerializer(ClientVersion.getLatest());
+        Map<ClientVersion, GsonComponentSerializer> serializers = new EnumMap<>(ClientVersion.class);
+        for (ClientVersion version : ClientVersion.values()) {
+            if (!version.isRelease()) {
+                continue;
+            }
+            if (version.isOlderThanOrEquals(ClientVersion.V_1_20_3)) {
+                serializers.put(version, legacySerializer);
+            } else if (version.isOlderThanOrEquals(ClientVersion.V_1_21_4)) {
+                serializers.put(version, preModernEventSerializer);
+            } else {
+                serializers.put(version, latestSerializer);
+            }
+        }
+        return serializers;
+    }
+
+    private static Map<ClientVersion, NBTComponentSerializer> createNBTSerializers() {
+        NBTComponentSerializer legacySerializer = createNBTSerializer(ClientVersion.V_1_20_2);
+        NBTComponentSerializer legacyUuidSerializer = createNBTSerializer(ClientVersion.V_1_20_3);
+        NBTComponentSerializer preModernEventSerializer = createNBTSerializer(ClientVersion.V_1_21_4);
+        NBTComponentSerializer latestSerializer = createNBTSerializer(ClientVersion.getLatest());
+        Map<ClientVersion, NBTComponentSerializer> serializers = new EnumMap<>(ClientVersion.class);
+        for (ClientVersion version : ClientVersion.values()) {
+            if (!version.isRelease()) {
+                continue;
+            }
+            if (version.isOlderThanOrEquals(ClientVersion.V_1_20_2)) {
+                serializers.put(version, legacySerializer);
+            } else if (version.isOlderThanOrEquals(ClientVersion.V_1_20_3)) {
+                serializers.put(version, legacyUuidSerializer);
+            } else if (version.isOlderThanOrEquals(ClientVersion.V_1_21_4)) {
+                serializers.put(version, preModernEventSerializer);
+            } else {
+                serializers.put(version, latestSerializer);
+            }
+        }
+        return serializers;
     }
 
     private static GsonComponentSerializer createGsonSerializer(ClientVersion clientVersion) {
