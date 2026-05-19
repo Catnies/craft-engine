@@ -11,25 +11,20 @@ import java.util.Objects;
 public record PacketRoute(
         PacketSide side,
         ConnectionState state,
-        @Nullable PacketTypeCommon packetType,
-        int packetId
+        PacketTypeCommon packetType
 ) {
 
     public PacketRoute {
         Objects.requireNonNull(side, "side");
         Objects.requireNonNull(state, "state");
-        if (packetType == null && packetId < 0) {
+        if (packetType == null) {
             throw new IllegalArgumentException("Raw packet routes require a non-negative packet id");
         }
     }
 
     public static PacketRoute typed(ConnectionState state, PacketTypeCommon packetType) {
         Objects.requireNonNull(packetType, "packetType");
-        return new PacketRoute(packetType.getSide(), state, packetType, -1);
-    }
-
-    public static PacketRoute raw(PacketSide side, ConnectionState state, int packetId) {
-        return new PacketRoute(side, state, null, packetId);
+        return new PacketRoute(packetType.getSide(), state, packetType);
     }
 
     public boolean typed() {
@@ -37,9 +32,6 @@ public record PacketRoute(
     }
 
     public int packetId(ClientVersion version) {
-        if (this.packetType == null) {
-            return this.packetId;
-        }
         return this.packetType.getId(version);
     }
 }

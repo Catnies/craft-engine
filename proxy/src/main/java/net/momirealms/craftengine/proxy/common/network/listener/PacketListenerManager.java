@@ -108,15 +108,15 @@ public abstract class PacketListenerManager implements Manageable {
             int payloadIndex = payload.readerIndex();
             ConnectionState state = connection.getConnectionState(side);
             ClientVersion clientVersion = connection.mappedClientVersion();
-            PacketHandlerChain chain = this.packetRegistry().find(side, state, clientVersion, packetId);
-            if (chain == null) {
+            PacketHandler packetHandler = this.packetRegistry().getPacketHandler(side, state, clientVersion, packetId);
+            if (packetHandler == null) {
                 payload.readerIndex(preProcessIndex);
                 return buffer;
             }
 
             PacketTypeCommon packetType = PacketType.getById(side, state, clientVersion, packetId);
             packet = new PacketContext(side, state, clientVersion, packetId, packetType, payload, payloadIndex);
-            chain.handle(connection, player, packet);
+            packetHandler.handle(connection, player, packet);
             if (packet.isCancelled()) {
                 payload.clear();
                 packet.releaseReplacementPayload();

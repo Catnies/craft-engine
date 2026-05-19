@@ -6,13 +6,12 @@ import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVer
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
 
 public final class PacketHandlerRegistry {
-    private final PacketHandlerChain[][][][] handlers =
-            new PacketHandlerChain[PacketSide.values().length][ConnectionState.values().length][ClientVersion.values().length][];
+    private final PacketHandler[][][][] handlers =
+            new PacketHandler[PacketSide.values().length][ConnectionState.values().length][ClientVersion.values().length][];
 
     private PacketHandlerRegistry() {}
 
@@ -21,69 +20,93 @@ public final class PacketHandlerRegistry {
     }
 
     public PacketRegistration register(@NotNull PacketRoute route, @NotNull PacketHandler handler) {
-        List<PacketHandlerChain> registeredChains = new ArrayList<>();
-        if (route.typed()) {
-            for (ClientVersion version : ClientVersion.values()) {
-                if (!version.isRelease()) {
-                    continue;
-                }
-                int packetId = route.packetId(version);
-                if (packetId >= 0) {
-                    this.add(route.side(), route.state(), version, packetId, handler, registeredChains);
-                }
-            }
-        } else {
-            for (ClientVersion version : ClientVersion.values()) {
-                this.add(route.side(), route.state(), version, route.packetId(), handler, registeredChains);
-            }
+        Objects.requireNonNull(route, "route");
+        Objects.requireNonNull(handler, "handler");
+
+        synchronized (this) {
+            this.ensureAvailable(route);
+            this.setPacketHandlers(route, handler);
         }
 
-        List<PacketHandlerChain> chains = List.copyOf(registeredChains);
-        return new PacketRegistration(route, handler, () -> {
-            for (PacketHandlerChain chain : chains) {
-                chain.remove(handler);
-            }
-        });
+        return new PacketRegistration(route, handler, () -> this.unregister(route, handler));
     }
 
-    public @Nullable PacketHandlerChain find(PacketSide side, ConnectionState state, ClientVersion version, int packetId) {
+    private void ensureAvailable(PacketRoute route) {
+        for (ClientVersion version : ClientVersion.values()) {
+            if (!version.isRelease()) {
+                continue;
+            }
+            int packetId = route.packetId(version);
+            if (packetId >= 0) {
+                PacketHandler existing = this.getPacketHandler(route.side(), route.state(), version, packetId);
+                if (existing != null) {
+                    throw new IllegalStateException("Packet handler already registered for " + route.side() + "/" + route.state() + "/" + version + "/" + packetId);
+                }
+            }
+        }
+    }
+
+    private void setPacketHandlers(PacketRoute route, PacketHandler handler) {
+        for (ClientVersion version : ClientVersion.values()) {
+            if (!version.isRelease()) {
+                continue;
+            }
+            int packetId = route.packetId(version);
+            if (packetId >= 0) {
+                this.setPacketHandler(route.side(), route.state(), version, packetId, handler);
+            }
+        }
+    }
+
+    private synchronized void unregister(PacketRoute route, PacketHandler handler) {
+        for (ClientVersion version : ClientVersion.values()) {
+            if (!version.isRelease()) {
+                continue;
+            }
+            int packetId = route.packetId(version);
+            if (packetId >= 0 && this.getPacketHandler(route.side(), route.state(), version, packetId) == handler) {
+                this.clearPacketHandler(route.side(), route.state(), version, packetId);
+            }
+        }
+    }
+
+    public @Nullable PacketHandler getPacketHandler(PacketSide side, ConnectionState state, ClientVersion version, int packetId) {
         if (side == null || state == null || packetId < 0) {
             return null;
         }
-
         ClientVersion mappedVersion = version == null || !version.isRelease() ? ClientVersion.getLatest() : version;
-        PacketHandlerChain[] chains = this.handlers[side.ordinal()][state.ordinal()][mappedVersion.ordinal()];
-        if (chains == null || packetId >= chains.length) {
+        PacketHandler[] packetHandlers = this.handlers[side.ordinal()][state.ordinal()][mappedVersion.ordinal()];
+        if (packetHandlers == null || packetId >= packetHandlers.length) {
             return null;
         }
-
-        PacketHandlerChain chain = chains[packetId];
-        return chain == null || chain.isEmpty() ? null : chain;
+        return packetHandlers[packetId];
     }
 
-    private void add(PacketSide side, ConnectionState state, ClientVersion version, int packetId, PacketHandler handler, List<PacketHandlerChain> registeredChains) {
-        PacketHandlerChain chain = this.chain(side, state, version, packetId);
-        chain.add(handler);
-        registeredChains.add(chain);
-    }
+    private synchronized void setPacketHandler(PacketSide side, ConnectionState state, ClientVersion version, int packetId, PacketHandler handler) {
+        PacketHandler[][][] sideHandlers = this.handlers[side.ordinal()];
+        PacketHandler[][] stateHandlers = sideHandlers[state.ordinal()];
+        PacketHandler[] versionHandlers = stateHandlers[version.ordinal()];
 
-    private synchronized PacketHandlerChain chain(PacketSide side, ConnectionState state, ClientVersion version, int packetId) {
-        PacketHandlerChain[][][] sideHandlers = this.handlers[side.ordinal()];
-        PacketHandlerChain[][] stateHandlers = sideHandlers[state.ordinal()];
-        PacketHandlerChain[] versionHandlers = stateHandlers[version.ordinal()];
         if (versionHandlers == null) {
-            versionHandlers = new PacketHandlerChain[Math.max(packetId + 1, 4)];
+            versionHandlers = new PacketHandler[Math.max(packetId + 1, 4)];
             stateHandlers[version.ordinal()] = versionHandlers;
         } else if (packetId >= versionHandlers.length) {
             versionHandlers = Arrays.copyOf(versionHandlers, packetId + 1);
             stateHandlers[version.ordinal()] = versionHandlers;
         }
 
-        PacketHandlerChain chain = versionHandlers[packetId];
-        if (chain == null) {
-            chain = new PacketHandlerChain();
-            versionHandlers[packetId] = chain;
+        versionHandlers[packetId] = handler;
+    }
+
+    private synchronized void clearPacketHandler(PacketSide side, ConnectionState state, ClientVersion version, int packetId) {
+        if (side == null || state == null || packetId < 0) {
+            return;
         }
-        return chain;
+        ClientVersion mappedVersion = version == null || !version.isRelease() ? ClientVersion.getLatest() : version;
+        PacketHandler[] versionHandlers = this.handlers[side.ordinal()][state.ordinal()][mappedVersion.ordinal()];
+        if (versionHandlers == null || packetId >= versionHandlers.length) {
+            return;
+        }
+        versionHandlers[packetId] = null;
     }
 }
