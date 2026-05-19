@@ -3,6 +3,7 @@ package net.momirealms.craftengine.proxy.velocity.platform;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
@@ -57,6 +58,11 @@ public class VelocityPlayer implements ProxyPlayer {
     @Override
     public Locale locale() {
         return this.platform.getEffectiveLocale();
+    }
+
+    @Override
+    public void kick(String reason) {
+        this.platform.disconnect(Component.text(reason));
     }
 
     @Override

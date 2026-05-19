@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public final class PacketHandlerRegistry {
     private final PacketHandler[][][][] handlers =
@@ -19,21 +20,59 @@ public final class PacketHandlerRegistry {
         return new PacketHandlerRegistry();
     }
 
+    // 对全部支持的客户端版本注册包监听器.
     public PacketRegistration register(@NotNull PacketRoute route, @NotNull PacketHandler handler) {
-        Objects.requireNonNull(route, "route");
-        Objects.requireNonNull(handler, "handler");
-
-        synchronized (this) {
-            this.ensureAvailable(route);
-            this.setPacketHandlers(route, handler);
-        }
-
-        return new PacketRegistration(route, handler, () -> this.unregister(route, handler));
+        return this.register(route, handler, version -> true);
     }
 
-    private void ensureAvailable(PacketRoute route) {
+    // 对单个支持的客户端版本注册包监听器.
+    public PacketRegistration register(@NotNull PacketRoute route, @NotNull ClientVersion version, @NotNull PacketHandler handler) {
+        Objects.requireNonNull(version, "version");
+        this.ensureReleaseVersion(version, "version");
+        return this.register(route, handler, candidate -> candidate == version);
+    }
+
+    // 对某个特定及以上的版本注册包监听器.
+    public PacketRegistration registerSince(@NotNull PacketRoute route, @NotNull ClientVersion minInclusive, @NotNull PacketHandler handler) {
+        Objects.requireNonNull(minInclusive, "minInclusive");
+        this.ensureReleaseVersion(minInclusive, "minInclusive");
+        return this.register(route, handler, version -> version.isNewerThanOrEquals(minInclusive));
+    }
+
+    // 对特定区间的版本注册包监听器.
+    public PacketRegistration registerBetween(@NotNull PacketRoute route, @NotNull ClientVersion minInclusive, @NotNull ClientVersion maxInclusive, @NotNull PacketHandler handler) {
+        Objects.requireNonNull(minInclusive, "minInclusive");
+        Objects.requireNonNull(maxInclusive, "maxInclusive");
+        this.ensureReleaseVersion(minInclusive, "minInclusive");
+        this.ensureReleaseVersion(maxInclusive, "maxInclusive");
+        if (minInclusive.isNewerThan(maxInclusive)) {
+            throw new IllegalArgumentException("minInclusive must be older than or equal to maxInclusive");
+        }
+        return this.register(route, handler, version -> version.isNewerThanOrEquals(minInclusive) && version.isOlderThanOrEquals(maxInclusive));
+    }
+
+    private PacketRegistration register(PacketRoute route, PacketHandler handler, Predicate<ClientVersion> versionPredicate) {
+        Objects.requireNonNull(route, "route");
+        Objects.requireNonNull(handler, "handler");
+        Objects.requireNonNull(versionPredicate, "versionPredicate");
+
+        synchronized (this) {
+            this.ensureAvailable(route, versionPredicate);
+            this.setPacketHandlers(route, handler, versionPredicate);
+        }
+
+        return new PacketRegistration(route, handler, () -> this.unregister(route, handler, versionPredicate));
+    }
+
+    private void ensureReleaseVersion(ClientVersion version, String parameterName) {
+        if (!version.isRelease()) {
+            throw new IllegalArgumentException(parameterName + " must be a release client version");
+        }
+    }
+
+    private void ensureAvailable(PacketRoute route, Predicate<ClientVersion> versionPredicate) {
         for (ClientVersion version : ClientVersion.values()) {
-            if (!version.isRelease()) {
+            if (!version.isRelease() || !versionPredicate.test(version)) {
                 continue;
             }
             int packetId = route.packetId(version);
@@ -46,9 +85,9 @@ public final class PacketHandlerRegistry {
         }
     }
 
-    private void setPacketHandlers(PacketRoute route, PacketHandler handler) {
+    private void setPacketHandlers(PacketRoute route, PacketHandler handler, Predicate<ClientVersion> versionPredicate) {
         for (ClientVersion version : ClientVersion.values()) {
-            if (!version.isRelease()) {
+            if (!version.isRelease() || !versionPredicate.test(version)) {
                 continue;
             }
             int packetId = route.packetId(version);
@@ -58,9 +97,9 @@ public final class PacketHandlerRegistry {
         }
     }
 
-    private synchronized void unregister(PacketRoute route, PacketHandler handler) {
+    private synchronized void unregister(PacketRoute route, PacketHandler handler, Predicate<ClientVersion> versionPredicate) {
         for (ClientVersion version : ClientVersion.values()) {
-            if (!version.isRelease()) {
+            if (!version.isRelease() || !versionPredicate.test(version)) {
                 continue;
             }
             int packetId = route.packetId(version);

@@ -29,15 +29,15 @@ public abstract class PacketListenerManager implements Manageable {
 
     // 注册常规监听器
     protected void registerPacketListeners() {
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.PLAYER_LIST_HEADER_AND_FOOTER), new SetTabListHeaderAndFooterListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.TEAMS), new SetPlayerTeamListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.BOSS_BAR), new SetBossBarListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SET_TITLE_TEXT), new SetTitleTextListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SET_TITLE_SUBTITLE), new SetSubTitleTextListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.ACTION_BAR), new SetActionBarTextListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SYSTEM_CHAT_MESSAGE), new SystemChatListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.UPDATE_SCORE), new SetScoreListener(this.plugin()));
-        this.packetRegistry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.SCOREBOARD_OBJECTIVE), new SetObjectiveListener(this.plugin()));
+        SetTabListHeaderAndFooterListener.register(this.packetRegistry, this.plugin());
+        SetPlayerTeamListener.register(this.packetRegistry, this.plugin());
+        SetBossBarListener.register(this.packetRegistry, this.plugin());
+        SetTitleTextListener.register(this.packetRegistry, this.plugin());
+        SetSubTitleTextListener.register(this.packetRegistry, this.plugin());
+        SetActionBarTextListener.register(this.packetRegistry, this.plugin());
+        SystemChatListener.register(this.packetRegistry, this.plugin());
+        SetScoreListener.register(this.packetRegistry, this.plugin());
+        SetObjectiveListener.register(this.packetRegistry, this.plugin());
     }
 
     // 注册用于同步通用协议状态的内部数据包监听器

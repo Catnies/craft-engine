@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.proxy.bungeecord.platform;
 
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine;
@@ -57,6 +58,11 @@ public class BungeePlayer implements ProxyPlayer {
     @Override
     public Locale locale() {
         return platform.getLocale();
+    }
+
+    @Override
+    public void kick(String reason) {
+        this.platform.disconnect(new TextComponent(reason));
     }
 
     @Override

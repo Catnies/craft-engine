@@ -16,4 +16,6 @@ public interface ProxyPlayer extends ProtocolStateHolder {
     boolean sendServerPluginMessage(String channel, byte[] data);
 
     Locale locale();
+
+    void kick(String reason);
 }
