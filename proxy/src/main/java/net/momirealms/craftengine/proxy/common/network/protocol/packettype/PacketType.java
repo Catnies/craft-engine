@@ -713,6 +713,7 @@ public final class PacketType {
 
             public static void load() {
                 INDEX = 0;
+                loadPacketIds(ServerboundPacketType_1_19_4.values());
                 loadPacketIds(ServerboundPacketType_1_20_2.values());
                 loadPacketIds(ServerboundPacketType_1_20_3.values());
                 loadPacketIds(ServerboundPacketType_1_20_5.values());
@@ -1013,6 +1014,7 @@ public final class PacketType {
 
             public static void load() {
                 INDEX = 0;
+                loadPacketIds(ClientboundPacketType_1_19_4.values());
                 loadPacketIds(ClientboundPacketType_1_20_2.values());
                 loadPacketIds(ClientboundPacketType_1_20_3.values());
                 loadPacketIds(ClientboundPacketType_1_20_5.values());
