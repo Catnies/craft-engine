@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.proxy.common.tag;
 
 import io.netty.buffer.Unpooled;
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import org.jetbrains.annotations.Nullable;
@@ -25,15 +25,13 @@ public final class NetworkTagDataSyncService {
     private static final int SECRET_LENGTH = 16;
     private static final SecureRandom RANDOM = new SecureRandom();
     public static final UUID PROXY_UUID = UUID.randomUUID();
-    private final CraftEngineProxyPlugin plugin;
+    private final ProxyCraftEngine plugin;
     private final NetworkTagDataRegistry registry;
-    private final NetworkTagDataCodec codec;
     private final String secret;
 
-    public NetworkTagDataSyncService(CraftEngineProxyPlugin plugin) {
+    public NetworkTagDataSyncService(ProxyCraftEngine plugin) {
         this.plugin = plugin;
         this.registry = new NetworkTagDataRegistry();
-        this.codec = new NetworkTagDataCodec(this.registry);
         this.secret = this.readOrCreateSecret();
     }
 
@@ -89,10 +87,6 @@ public final class NetworkTagDataSyncService {
         return this.registry;
     }
 
-    public NetworkTagDataCodec codec() {
-        return codec;
-    }
-
     public String secret() {
         return secret;
     }
@@ -117,7 +111,7 @@ public final class NetworkTagDataSyncService {
 
     public void receiveTagData(String serverName, ProxyByteBuf in) {
         if (this.secret.equals(in.readUtf())) {
-            this.registry.put(serverName, this.codec.read(serverName, in));
+            this.registry.put(serverName, NetworkTagDataDeserializer.read(in, this.registry, serverName));
         }
     }
 

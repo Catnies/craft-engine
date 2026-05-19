@@ -2,7 +2,7 @@ package net.momirealms.craftengine.proxy.bungeecord.platform;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
-import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
 import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
@@ -24,8 +24,8 @@ public class BungeePlayer implements ProxyPlayer {
         this.setProtocolVersion(platform.getPendingConnection().getVersion());
     }
 
-    public static BungeePlayer wrapper(ProxiedPlayer platform) {
-        return CraftEngineBungeeCordPlugin.INSTANCE.playerManager().wrapper(platform);
+    public static BungeePlayer wrap(ProxiedPlayer platform) {
+        return BungeeCord.INSTANCE.playerManager().wrapper(platform);
     }
 
     @Override

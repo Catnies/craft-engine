@@ -44,7 +44,6 @@ open class RelocationExtension {
             relocate("com.github.benmanes.caffeine", "$libs.caffeine")
             relocate("net.momirealms.sparrow.reflection", "$libs.reflection")
             relocate("net.momirealms.sparrow.nbt", "$libs.nbt")
-            relocate("com.github.retrooper.packetevents", "$libs.packetevents")
         }
     }
 }

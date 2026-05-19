@@ -7,7 +7,7 @@ import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import java.io.File;
 import java.nio.file.Path;
 
-public interface CraftEngineProxyPlugin {
+public interface ProxyCraftEngine {
 
     File dataFolderFile();
 
@@ -18,5 +18,4 @@ public interface CraftEngineProxyPlugin {
     PacketListenerManager packetListenerManager();
 
     NetworkTagDataSyncService networkTagDataSyncService();
-
 }

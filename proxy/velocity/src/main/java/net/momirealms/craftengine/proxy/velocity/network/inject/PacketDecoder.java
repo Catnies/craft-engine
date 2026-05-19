@@ -8,7 +8,7 @@ import io.netty.util.ReferenceCountUtil;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
-import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
+import net.momirealms.craftengine.proxy.velocity.Velocity;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ final class PacketDecoder extends MessageToMessageDecoder<ByteBuf> {
         this.packetSink = packetSink;
         this.connection = connection;
         // 如果没有启用数据包压缩, 则直接标记, 无需触发重排.
-        this.relocated = CraftEngineVelocityPlugin.INSTANCE.server.getConfiguration().getCompressionThreshold() == -1;
+        this.relocated = Velocity.INSTANCE.server.getConfiguration().getCompressionThreshold() == -1;
     }
 
     @Override

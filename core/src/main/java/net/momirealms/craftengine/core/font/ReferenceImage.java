@@ -58,8 +58,4 @@ public final class ReferenceImage implements Image {
     public int codepointAt(int row, int column) {
         return this.ref.get().codepointAt(this.row, this.col);
     }
-
-    public void write(FriendlyByteBuf buf) {
-        buf.writeKey(refId);
-    }
 }

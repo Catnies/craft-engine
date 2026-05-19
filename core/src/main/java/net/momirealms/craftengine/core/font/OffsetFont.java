@@ -151,26 +151,6 @@ public final class OffsetFont {
 
     public void write(FriendlyByteBuf byteBuf) {
         FriendlyByteBuf buf = new FriendlyByteBuf(byteBuf);
-        buf.writeKey(font);
-        for (int i = 1; i <= 15; i++) {
-            buf.writeUtf(this.negativeOffsets[i]);
-        }
-        buf.writeUtf(this.NEG_16);
-        buf.writeUtf(this.NEG_24);
-        buf.writeUtf(this.NEG_32);
-        buf.writeUtf(this.NEG_48);
-        buf.writeUtf(this.NEG_64);
-        buf.writeUtf(this.NEG_128);
-        buf.writeUtf(this.NEG_256);
-        for (int i = 1; i <= 15; i++) {
-            buf.writeUtf(this.positiveOffsets[i]);
-        }
-        buf.writeUtf(this.POS_16);
-        buf.writeUtf(this.POS_24);
-        buf.writeUtf(this.POS_32);
-        buf.writeUtf(this.POS_48);
-        buf.writeUtf(this.POS_64);
-        buf.writeUtf(this.POS_128);
-        buf.writeUtf(this.POS_256);
+
     }
 }

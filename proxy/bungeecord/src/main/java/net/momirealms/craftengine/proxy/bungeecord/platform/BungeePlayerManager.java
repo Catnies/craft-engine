@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.proxy.bungeecord.platform;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
 import net.momirealms.craftengine.proxy.common.platform.PlayerManager;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,10 +11,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BungeePlayerManager implements PlayerManager {
-    private final CraftEngineBungeeCordPlugin plugin;
+    private final BungeeCord plugin;
     private final Map<UUID, BungeePlayer> players = new ConcurrentHashMap<>();
 
-    public BungeePlayerManager(CraftEngineBungeeCordPlugin plugin) {
+    public BungeePlayerManager(BungeeCord plugin) {
         this.plugin = plugin;
     }
 

@@ -2,16 +2,11 @@ package net.momirealms.craftengine.core.font;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.netty.buffer.ByteBuf;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FormatUtils;
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Supplier;
 
 public final class BitmapImage implements Supplier<JsonObject>, Image {
@@ -126,20 +121,5 @@ public final class BitmapImage implements Supplier<JsonObject>, Image {
             charArray.add(stringBuilder.toString());
         }
         return jsonObject;
-    }
-
-    public void write(FriendlyByteBuf buf) {
-        buf.writeKey(this.id);
-        buf.writeKey(this.font);
-        List<int[]> list = Arrays.asList(codepointGrid);
-        buf.writeCollection(
-                list,
-                (buf1, l1) -> {
-                    buf1.writeCollection(
-                            Arrays.stream(l1).boxed().toList(),
-                            FriendlyByteBuf::writeVarInt
-                    );
-                }
-        );
     }
 }

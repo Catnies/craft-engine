@@ -6,15 +6,14 @@ import io.netty.channel.ChannelPipeline;
 import net.md_5.bungee.api.ProxyServer;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.SetMonitor;
-import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 public final class PacketPipelineInjector {
     private static final String MINECRAFT_DECODER = "packet-decoder";
@@ -22,7 +21,7 @@ public final class PacketPipelineInjector {
     private static final String PACKET_DECODER = "craftengine_proxy_packet_decoder";
     private static final String PACKET_ENCODER = "craftengine_proxy_packet_encoder";
     private static final Field LISTENERS_FIELD;
-    private final CraftEngineBungeeCordPlugin plugin;
+    private final BungeeCord plugin;
     private final PacketSink packetSink; // raw ByteBuf 捕获回调
     private final Consumer<ChannelConnection> connectionRegisterer; // 新 Channel 注册回调
     private final Consumer<ChannelConnection> connectionUnregister; // Channel 关闭清理回调
@@ -33,7 +32,7 @@ public final class PacketPipelineInjector {
     }
 
     public PacketPipelineInjector(
-            CraftEngineBungeeCordPlugin plugin,
+            BungeeCord plugin,
             PacketSink packetSink,
             Consumer<ChannelConnection> connectionRegisterer,
             Consumer<ChannelConnection> connectionUnregister
@@ -57,9 +56,7 @@ public final class PacketPipelineInjector {
             LISTENERS_FIELD.set(ProxyServer.getInstance(), wrapper);
             this.injected = true;
         } catch (IllegalAccessException e) {
-            PrintWriter printWriter = new PrintWriter(new StringWriter());
-            e.printStackTrace(printWriter);
-            this.plugin.getLogger().severe(printWriter.toString());
+            this.plugin.getLogger().log(Level.SEVERE, "can't inject ", e); // todo
         }
     }
 

@@ -1,14 +1,13 @@
 package net.momirealms.craftengine.core.plugin.locale;
 
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 public final class ServerLangData {
     private final Map<Locale, String> translations = new HashMap<>();
-    private final String fallback;
+    public final String fallback;
 
     public ServerLangData(String fallback) {
         this.fallback = fallback;
@@ -22,6 +21,10 @@ public final class ServerLangData {
         this.translations.putIfAbsent(locale, translation);
     }
 
+    public void addTranslations(Map<Locale, String> translations) {
+        this.translations.putAll(translations);
+    }
+
     public String translate(final Locale locale) {
         String translation = this.translations.get(locale);
         if (translation == null) {
@@ -33,17 +36,11 @@ public final class ServerLangData {
         return translation;
     }
 
-    public void write(FriendlyByteBuf buf) {
-        // fallback
-        buf.writeBoolean(this.fallback != null);
-        if (this.fallback != null) {
-            buf.writeUtf(this.fallback);
-        }
-        // translations
-        buf.writeVarInt(this.translations.size());
-        for (Map.Entry<Locale, String> entry : this.translations.entrySet()) {
-            buf.writeUtf(entry.getKey().toLanguageTag());
-            buf.writeUtf(entry.getValue());
-        }
+    public int localeCount() {
+        return this.translations.size();
+    }
+
+    public Map<Locale, String> getTranslations() {
+        return Collections.unmodifiableMap(this.translations);
     }
 }

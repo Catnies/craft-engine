@@ -3,15 +3,14 @@ package net.momirealms.craftengine.proxy.velocity.network;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketRegistration;
 import net.momirealms.craftengine.proxy.common.network.protocol.PacketSide;
 import net.momirealms.craftengine.proxy.common.network.protocol.packettype.PacketType;
-import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
+import net.momirealms.craftengine.proxy.velocity.Velocity;
 import net.momirealms.craftengine.proxy.velocity.network.inject.PacketPipelineInjector;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 
@@ -20,14 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public final class VelocityPacketListenerManager extends PacketListenerManager {
-    private final CraftEngineVelocityPlugin plugin;
+    private final Velocity plugin;
     private final PacketPipelineInjector pipelineInjector; // 负责 Velocity Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
     private final ConcurrentMap<Channel, ChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
     private final ConcurrentMap<SocketAddress, ChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
     private volatile boolean loaded;
 
-    public VelocityPacketListenerManager(CraftEngineVelocityPlugin plugin) {
+    public VelocityPacketListenerManager(Velocity plugin) {
         super();
         this.plugin = plugin;
         this.errorHandler = this::handlePacketError;
@@ -90,7 +89,7 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         if (connection == null) {
             return;
         }
-        VelocityPlayer player = VelocityPlayer.wrapper(event.getPlayer());
+        VelocityPlayer player = VelocityPlayer.wrap(event.getPlayer());
         connection.bind(player);
     }
 
@@ -127,11 +126,11 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
     }
 
     @Override
-    public CraftEngineProxyPlugin plugin() {
+    public ProxyCraftEngine plugin() {
         return this.plugin;
     }
 
     private void handlePacketError(int packetId, PacketSide side, Throwable throwable) {
-        this.plugin.logger.warn("An error occurred when handling Velocity packet " + packetId + " (" + side + ")", throwable);
+        this.plugin.logger.warn("An error occurred when handling packet " + packetId + " (" + side + ")", throwable);
     }
 }

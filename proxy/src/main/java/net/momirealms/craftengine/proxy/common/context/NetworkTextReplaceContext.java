@@ -23,9 +23,11 @@ public final class NetworkTextReplaceContext implements Context {
     private TagResolver[] tagResolvers;
 
     public NetworkTextReplaceContext(ProxyPlayer player, NetworkTagData netWorkTagData) {
-        this.contexts = ContextHolder.trustedMutable(MiscUtils.init(new HashMap<>(4), it -> {
-            it.put(PLAYER, () -> player);
-        }));
+        this.contexts = ContextHolder.trustedMutable(
+                MiscUtils.init(new HashMap<>(4), it -> {
+                    it.put(PLAYER, () -> player);
+                })
+        );
         this.player = player;
         this.netWorkTagData = netWorkTagData;
         this.staticTagResolvers = netWorkTagData.tagResolvers();
@@ -49,12 +51,7 @@ public final class NetworkTextReplaceContext implements Context {
     @Override
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
-            this.tagResolvers = ArrayUtils.mergeNoCopy(
-                    this.staticTagResolvers,
-                    new TagResolver[] {
-                            new NetworkL10NTag(this)
-                    }
-            );
+            this.tagResolvers = ArrayUtils.appendElementToArrayTail(this.staticTagResolvers, new NetworkL10NTag(this));
         }
         return this.tagResolvers;
     }

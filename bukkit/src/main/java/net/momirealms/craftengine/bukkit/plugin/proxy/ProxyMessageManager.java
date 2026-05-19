@@ -3,13 +3,9 @@ package net.momirealms.craftengine.bukkit.plugin.proxy;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.core.font.BitmapImage;
-import net.momirealms.craftengine.core.font.Image;
-import net.momirealms.craftengine.core.font.ReferenceImage;
+import net.momirealms.craftengine.core.font.NetworkTagDataSerializer;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.locale.ServerLangData;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
-import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,10 +14,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ProxyMessageManager implements Listener, PluginMessageListener {
+public final class ProxyMessageManager implements Listener, PluginMessageListener {
     private static final String TAG_DATA_IDENTIFIER = "craftengine:tag_data";
     private final BukkitCraftEngine plugin;
     private final boolean connectProxy;
@@ -42,44 +41,12 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
 
     private FriendlyByteBuf buildTagDataBuf() {
         FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
-        // Secret
-        byteBuf.writeUtf(Config.networkTagDataSecret());
-        // Version
-        byteBuf.writeLong(System.currentTimeMillis());
-        // OffsetFont
-        this.plugin.fontManager().offsetFont().write(byteBuf);
-        // Images
-        Map<Key, Image> imageMap = this.plugin.fontManager().loadedImages();
-        byteBuf.writeVarInt(imageMap.size());
-        for (Map.Entry<Key, Image> entry : imageMap.entrySet()) {
-            byteBuf.writeKey(entry.getKey());
-            Image image = entry.getValue();
-            if (image instanceof BitmapImage bitmapImage) {
-                byteBuf.writeByte(0);
-                bitmapImage.write(byteBuf);
-            } else if (image instanceof ReferenceImage referenceImage) {
-                byteBuf.writeByte(1);
-                referenceImage.write(byteBuf);
-            }
-        }
-        // L10n
-        Set<String> serverLangKeys = this.plugin.translationManager().translationKeys();
-        byteBuf.writeVarInt(serverLangKeys.size());
-        for (String serverLangKey : serverLangKeys) {
-            ServerLangData data = this.plugin.translationManager().translationData(serverLangKey);
-            if (data != null) {
-                byteBuf.writeUtf(serverLangKey);
-                data.write(byteBuf);
-            }
-        }
-        // Global
-        Map<String, String> globalVariables = this.plugin.globalVariableManager().globalVariables();
-        byteBuf.writeVarInt(globalVariables.size());
-        for (Map.Entry<String, String> entry : globalVariables.entrySet()) {
-            byteBuf.writeUtf(entry.getKey());
-            byteBuf.writeUtf(entry.getValue());
-        }
-
+        byteBuf.writeUtf(Config.networkTagDataSecret()); // Secret
+        byteBuf.writeLong(System.currentTimeMillis()); // Version
+        NetworkTagDataSerializer.writeOffsetFont(byteBuf, this.plugin.fontManager().offsetFont());
+        NetworkTagDataSerializer.writeImages(byteBuf, this.plugin.fontManager().loadedImages());
+        NetworkTagDataSerializer.writeL10n(byteBuf, this.plugin.translationManager());
+        NetworkTagDataSerializer.writeGlobalVariables(byteBuf, this.plugin.globalVariableManager());
         return byteBuf;
     }
 
@@ -102,10 +69,13 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
         this.networkTagDataVersion = System.currentTimeMillis();
         this.tagDataBuf = this.buildTagDataBuf();
         this.proxyPlayers.values().forEach(set -> {
-            set.stream()
-                    .findFirst()
-                    .map(Bukkit::getPlayer)
-                    .map(this::sendTagData);
+            for (UUID playerUUID : set) {
+                Player player = Bukkit.getPlayer(playerUUID);
+                if (player != null && player.isConnected()) {
+                    this.sendTagData(player);
+                    break;
+                }
+            }
         });
     }
 
@@ -132,7 +102,7 @@ public class ProxyMessageManager implements Listener, PluginMessageListener {
             long dataVersion = buf.readLong();
             UUID proxyUUID = buf.readUUID();
             // 记录玩家所在的代理服务器.
-            proxyPlayers.computeIfAbsent(proxyUUID, it -> new HashSet<>()).add(player.getUniqueId());
+            proxyPlayers.computeIfAbsent(proxyUUID, it -> ConcurrentHashMap.newKeySet()).add(player.getUniqueId());
             proxyByPlayer.put(player.getUniqueId(), proxyUUID);
             // 更新字体数据.
             if (dataVersion != this.networkTagDataVersion) {

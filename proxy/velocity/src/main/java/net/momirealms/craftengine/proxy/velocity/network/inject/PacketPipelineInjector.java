@@ -6,7 +6,7 @@ import io.netty.channel.ChannelPipeline;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketSink;
-import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
+import net.momirealms.craftengine.proxy.velocity.Velocity;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
@@ -21,14 +21,14 @@ public final class PacketPipelineInjector {
     private static final String CONNECTION_MANAGER_CLASS_NAME = "com.velocitypowered.proxy.network.ConnectionManager";
     private static final String SERVER_INITIALIZER_HOLDER_CLASS_NAME = "com.velocitypowered.proxy.network.ServerChannelInitializerHolder";
 
-    private final CraftEngineVelocityPlugin plugin;
+    private final Velocity plugin;
     private final PacketSink packetSink; // raw ByteBuf 捕获回调
     private final Consumer<ChannelConnection> connectionRegisterer; // 新 Channel 注册回调
     private final Consumer<ChannelConnection> connectionUnregister; // Channel 关闭清理回调
     private volatile boolean injected; // initializer 是否处于注入状态
 
     public PacketPipelineInjector(
-            CraftEngineVelocityPlugin plugin,
+            Velocity plugin,
             PacketSink packetSink,
             Consumer<ChannelConnection> connectionRegisterer,
             Consumer<ChannelConnection> connectionUnregister

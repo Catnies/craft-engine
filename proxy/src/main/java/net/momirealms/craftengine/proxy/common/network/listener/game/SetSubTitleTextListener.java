@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.proxy.common.network.listener.game;
 
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketContext;
@@ -17,9 +17,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 
 public class SetSubTitleTextListener implements PacketHandler {
-    private final CraftEngineProxyPlugin plugin;
+    private final ProxyCraftEngine plugin;
 
-    public SetSubTitleTextListener(CraftEngineProxyPlugin plugin) {
+    public SetSubTitleTextListener(ProxyCraftEngine plugin) {
         this.plugin = plugin;
     }
 

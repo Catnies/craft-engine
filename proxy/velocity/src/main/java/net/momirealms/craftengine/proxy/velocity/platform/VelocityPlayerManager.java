@@ -4,7 +4,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.proxy.Player;
 import net.momirealms.craftengine.proxy.common.platform.PlayerManager;
-import net.momirealms.craftengine.proxy.velocity.CraftEngineVelocityPlugin;
+import net.momirealms.craftengine.proxy.velocity.Velocity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -12,10 +12,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class VelocityPlayerManager implements PlayerManager {
-    private final CraftEngineVelocityPlugin plugin;
+    private final Velocity plugin;
     private final Map<UUID, VelocityPlayer> players = new ConcurrentHashMap<>();
 
-    public VelocityPlayerManager(CraftEngineVelocityPlugin plugin) {
+    public VelocityPlayerManager(Velocity plugin) {
         this.plugin = plugin;
         this.load();
     }

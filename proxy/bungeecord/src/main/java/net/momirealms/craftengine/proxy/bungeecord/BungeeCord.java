@@ -4,7 +4,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.momirealms.craftengine.proxy.bungeecord.network.BungeePacketListenerManager;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayerManager;
 import net.momirealms.craftengine.proxy.bungeecord.tag.BungeeNetworkTagDataBridge;
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
@@ -12,8 +12,8 @@ import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import java.io.File;
 import java.nio.file.Path;
 
-public class CraftEngineBungeeCordPlugin extends Plugin implements CraftEngineProxyPlugin {
-    public static CraftEngineBungeeCordPlugin INSTANCE;
+public class BungeeCord extends Plugin implements ProxyCraftEngine {
+    public static BungeeCord INSTANCE;
     private BungeePlayerManager playerManager;
     private BungeePacketListenerManager packetListenerManager;
     private BungeeNetworkTagDataBridge bungeeNetworkTagDataBridge;

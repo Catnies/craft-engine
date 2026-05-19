@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
-
 final class ChannelInitializer extends io.netty.channel.ChannelInitializer<Channel> {
     private static volatile Method initChannelMethod;
 

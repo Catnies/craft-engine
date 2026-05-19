@@ -1,16 +1,15 @@
 package net.momirealms.craftengine.proxy.bungeecord.network;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import net.momirealms.craftengine.proxy.bungeecord.CraftEngineBungeeCordPlugin;
+import net.momirealms.craftengine.proxy.bungeecord.BungeeCord;
 import net.momirealms.craftengine.proxy.bungeecord.network.inject.PacketPipelineInjector;
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketRegistration;
@@ -22,14 +21,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class BungeePacketListenerManager extends PacketListenerManager implements Listener {
-    private final CraftEngineBungeeCordPlugin plugin;
+    private final BungeeCord plugin;
     private final PacketPipelineInjector pipelineInjector; // 负责 Bungee Netty pipeline 注入
     private final PacketListenerManager.ErrorHandler errorHandler;
     private final ConcurrentMap<Channel, ChannelConnection> connectionsByChannel = new ConcurrentHashMap<>(); // Channel 生命周期索引
     private final ConcurrentMap<SocketAddress, ChannelConnection> connectionsByAddress = new ConcurrentHashMap<>(); // 登录事件绑定玩家
     private volatile boolean loaded;
 
-    public BungeePacketListenerManager(CraftEngineBungeeCordPlugin plugin) {
+    public BungeePacketListenerManager(BungeeCord plugin) {
         super();
         this.plugin = plugin;
         this.errorHandler = this::handlePacketError;
@@ -92,7 +91,7 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         if (connection == null) {
             return;
         }
-        BungeePlayer player = BungeePlayer.wrapper(event.getPlayer());
+        BungeePlayer player = BungeePlayer.wrap(event.getPlayer());
         connection.bind(player);
     }
 
@@ -129,11 +128,11 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
     }
 
     @Override
-    public CraftEngineProxyPlugin plugin() {
+    public ProxyCraftEngine plugin() {
         return this.plugin;
     }
 
     private void handlePacketError(int packetId, PacketSide side, Throwable throwable) {
-        this.plugin.getLogger().warning("An error occurred when handling bungee packet " + packetId + " (" + side + ")");
+        this.plugin.getLogger().warning("An error occurred when handling packet " + packetId + " (" + side + ")");
     }
 }

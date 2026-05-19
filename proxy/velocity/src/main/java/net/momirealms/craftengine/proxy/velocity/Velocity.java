@@ -8,7 +8,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
 import net.momirealms.craftengine.proxy.velocity.network.VelocityPacketListenerManager;
@@ -25,8 +25,8 @@ import java.nio.file.Path;
         version = "1.0.0-SNAPSHOT",
         authors = {"Catnies"}
 )
-public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
-    public static CraftEngineVelocityPlugin INSTANCE;
+public class Velocity implements ProxyCraftEngine {
+    public static Velocity INSTANCE;
     public final ProxyServer server;
     public final Logger logger;
     public final PluginContainer pluginContainer;
@@ -36,7 +36,7 @@ public class CraftEngineVelocityPlugin implements CraftEngineProxyPlugin {
     private VelocityNetworkTagDataBridge networkTagDataBridge;
 
     @Inject
-    public CraftEngineVelocityPlugin(ProxyServer server, Logger logger, PluginContainer pluginContainer, @DataDirectory Path dataDirectory) {
+    public Velocity(ProxyServer server, Logger logger, PluginContainer pluginContainer, @DataDirectory Path dataDirectory) {
         INSTANCE = this;
         this.server = server;
         this.logger = logger;

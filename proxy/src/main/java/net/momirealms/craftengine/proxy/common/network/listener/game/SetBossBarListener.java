@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.proxy.common.network.listener.game;
 
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketContext;
@@ -18,9 +18,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class SetBossBarListener implements PacketHandler {
-    private final CraftEngineProxyPlugin plugin;
+    private final ProxyCraftEngine plugin;
 
-    public SetBossBarListener(CraftEngineProxyPlugin plugin) {
+    public SetBossBarListener(ProxyCraftEngine plugin) {
         this.plugin = plugin;
     }
 

@@ -3,7 +3,7 @@ package net.momirealms.craftengine.proxy.common.network.listener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.core.plugin.Manageable;
-import net.momirealms.craftengine.proxy.common.CraftEngineProxyPlugin;
+import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
 import net.momirealms.craftengine.proxy.common.network.listener.game.*;
 import net.momirealms.craftengine.proxy.common.network.packet.*;
@@ -150,7 +150,7 @@ public abstract class PacketListenerManager implements Manageable {
 
     public abstract ErrorHandler errorHandler();
 
-    public abstract CraftEngineProxyPlugin plugin();
+    public abstract ProxyCraftEngine plugin();
 
     @FunctionalInterface
     public interface ErrorHandler {
