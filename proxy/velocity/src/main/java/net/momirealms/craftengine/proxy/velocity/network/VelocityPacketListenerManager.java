@@ -2,8 +2,10 @@ package net.momirealms.craftengine.proxy.velocity.network;
 
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import io.netty.channel.Channel;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
@@ -80,6 +82,14 @@ public final class VelocityPacketListenerManager extends PacketListenerManager {
         }
         this.connectionsByChannel.clear();
         this.connectionsByAddress.clear();
+    }
+
+    @Subscribe
+    public void onPreLogin(PreLoginEvent event) {
+        int protocolVersion = event.getConnection().getProtocolVersion().getProtocol();
+        if (PacketListenerManager.isUnsupportedClientProtocolVersion(protocolVersion)) {
+            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text(PacketListenerManager.unsupportedClientVersionMessage())));
+        }
     }
 
     @Subscribe

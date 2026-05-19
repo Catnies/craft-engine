@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PacketListenerManager implements Manageable {
+    private static final String UNSUPPORTED_CLIENT_VERSION_MESSAGE = "[CraftEngine-Proxy] Unsupported Minecraft Client Version, Support Version is "
+            + ClientVersion.getOldest().getReleaseName() + " - " + ClientVersion.getLatest().getReleaseName() + "!";
+
     protected final PacketHandlerRegistry packetRegistry;
     protected final List<PacketRegistration> internalRegistrations = new ArrayList<>(); // 内部协议状态监听
 
@@ -62,7 +65,7 @@ public abstract class PacketListenerManager implements Manageable {
         this.internalRegistrations.add(this.packetRegistry.register(
                 PacketRoute.typed(ConnectionState.LOGIN, PacketType.Login.Server.LOGIN_SUCCESS),
                 (connection, player, packet) -> {
-                    if (connection.mappedClientVersion().isNewerThanOrEquals(ClientVersion.V_1_20_2)) {
+                    if (connection.clientVersion().isNewerThanOrEquals(ClientVersion.V_1_20_2)) {
                         connection.setEncoderState(ConnectionState.CONFIGURATION);
                     } else {
                         connection.setConnectionState(ConnectionState.PLAY);
@@ -92,7 +95,7 @@ public abstract class PacketListenerManager implements Manageable {
     }
 
     // 处理原始数据包 buffer, 将数据包转换为 ProxyPacketContext 并返回最终应继续传递的 buffer
-    protected ByteBuf handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketSide side, ByteBuf buffer) {
+    public ByteBuf handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketSide side, ByteBuf buffer) {
         if (!buffer.isReadable()) {
             return buffer;
         }
@@ -107,7 +110,7 @@ public abstract class PacketListenerManager implements Manageable {
             packetId = payload.readVarInt();
             int payloadIndex = payload.readerIndex();
             ConnectionState state = connection.getConnectionState(side);
-            ClientVersion clientVersion = connection.mappedClientVersion();
+            ClientVersion clientVersion = connection.clientVersion();
             PacketHandler packetHandler = this.packetRegistry().getPacketHandler(side, state, clientVersion, packetId);
             if (packetHandler == null) {
                 payload.readerIndex(preProcessIndex);
@@ -146,6 +149,14 @@ public abstract class PacketListenerManager implements Manageable {
 
     public PacketHandlerRegistry packetRegistry() {
         return this.packetRegistry;
+    }
+
+    public static boolean isUnsupportedClientProtocolVersion(int protocolVersion) {
+        return !ClientVersion.isRelease(protocolVersion);
+    }
+
+    public static String unsupportedClientVersionMessage() {
+        return UNSUPPORTED_CLIENT_VERSION_MESSAGE;
     }
 
     public abstract ErrorHandler errorHandler();

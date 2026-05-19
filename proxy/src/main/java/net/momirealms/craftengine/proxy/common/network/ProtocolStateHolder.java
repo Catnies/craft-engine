@@ -13,11 +13,6 @@ public interface ProtocolStateHolder {
 
     ClientVersion clientVersion();
 
-    default ClientVersion mappedClientVersion() {
-        ClientVersion clientVersion = this.clientVersion();
-        return clientVersion == ClientVersion.UNKNOWN ? ClientVersion.getLatest() : clientVersion;
-    }
-
     int protocolVersion();
 
     void setProtocolVersion(int protocolVersion);
@@ -29,7 +24,7 @@ public interface ProtocolStateHolder {
 
     @Nullable
     default PacketTypeCommon packetType(PacketSide side, int packetId) {
-        return PacketType.getById(side, this.getConnectionState(side), this.mappedClientVersion(), packetId);
+        return PacketType.getById(side, this.getConnectionState(side), this.clientVersion(), packetId);
     }
 
     void setConnectionState(ConnectionState connectionState);
