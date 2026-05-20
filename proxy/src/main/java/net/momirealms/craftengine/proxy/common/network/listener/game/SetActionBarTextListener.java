@@ -2,7 +2,7 @@ package net.momirealms.craftengine.proxy.common.network.listener.game;
 
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.context.NetworkTextReplaceContext;
-import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketContext;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketHandler;
 import net.momirealms.craftengine.proxy.common.network.packet.PacketHandlerRegistry;
@@ -37,7 +37,7 @@ public final class SetActionBarTextListener {
         }
 
         @Override
-        public void handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketContext packet) {
+        public void handle(ChannelConnection connection, @Nullable ProxyPlayer player, PacketContext packet) {
             if (player == null) return;
             NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagDataForPlayer(player);
             if (netWorkTagData == null) return;
@@ -65,7 +65,7 @@ public final class SetActionBarTextListener {
         }
 
         @Override
-        public void handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketContext packet) {
+        public void handle(ChannelConnection connection, @Nullable ProxyPlayer player, PacketContext packet) {
             if (player == null) return;
             NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagDataForPlayer(player);
             if (netWorkTagData == null) return;

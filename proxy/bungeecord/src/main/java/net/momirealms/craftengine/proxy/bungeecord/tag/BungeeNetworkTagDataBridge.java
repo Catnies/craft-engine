@@ -41,7 +41,10 @@ public class BungeeNetworkTagDataBridge implements Listener {
 
     @EventHandler
     public void onServerConnected(ServerConnectedEvent event) {
-        this.networkTagDataSyncService.sendTagDataVersion(BungeePlayer.wrap(event.getPlayer()));
+        BungeePlayer player = this.plugin.getPlayer(event.getPlayer().getUniqueId());
+        if (player != null) {
+            this.networkTagDataSyncService.sendTagDataVersion(player);
+        }
     }
 
     @EventHandler

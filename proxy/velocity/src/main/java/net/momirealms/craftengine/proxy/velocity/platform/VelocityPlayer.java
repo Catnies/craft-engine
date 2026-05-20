@@ -4,30 +4,25 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
-import net.momirealms.craftengine.proxy.common.network.protocol.player.ClientVersion;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.platform.BackendServer;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
 import net.momirealms.craftengine.proxy.velocity.VelocityCraftEngine;
 
 import java.util.Locale;
-import java.util.Objects;
 import java.util.UUID;
 
 public class VelocityPlayer implements ProxyPlayer {
-    private volatile Player platform;
-    private volatile int protocolVersion = -1;
-    private ClientVersion clientVersion = ClientVersion.UNKNOWN;
-    private ConnectionState decoderState = ConnectionState.HANDSHAKING;
-    private ConnectionState encoderState = ConnectionState.HANDSHAKING;
+    private final Player platform;
+    private final ChannelConnection connection;
 
-    public VelocityPlayer(Player platform) {
+    public VelocityPlayer(Player platform, ChannelConnection connection) {
         this.platform = platform;
-        this.setProtocolVersion(platform.getProtocolVersion().getProtocol());
+        this.connection = connection;
     }
 
-    public static VelocityPlayer wrap(Player platform) {
-        return VelocityCraftEngine.INSTANCE.wrap(platform);
+    public static VelocityPlayer wrap(Player platform, ChannelConnection connection) {
+        return VelocityCraftEngine.INSTANCE.wrap(platform, connection);
     }
 
     @Override
@@ -49,6 +44,11 @@ public class VelocityPlayer implements ProxyPlayer {
     }
 
     @Override
+    public ChannelConnection connection() {
+        return this.connection;
+    }
+
+    @Override
     public boolean sendServerPluginMessage(String channel, byte[] data) {
         return this.platform.getCurrentServer()
                 .map(it -> it.sendPluginMessage(MinecraftChannelIdentifier.from(channel), data))
@@ -65,46 +65,4 @@ public class VelocityPlayer implements ProxyPlayer {
         this.platform.disconnect(Component.text(reason));
     }
 
-    @Override
-    public ClientVersion clientVersion() {
-        return this.clientVersion;
-    }
-
-    @Override
-    public int protocolVersion() {
-        return this.protocolVersion;
-    }
-
-    @Override
-    public void setProtocolVersion(int protocolVersion) {
-        this.protocolVersion = protocolVersion;
-        this.clientVersion = protocolVersion < 0 ? ClientVersion.UNKNOWN : ClientVersion.getById(protocolVersion);
-    }
-
-    @Override
-    public void setConnectionState(ConnectionState connectionState) {
-        ConnectionState state = Objects.requireNonNull(connectionState, "connectionState");
-        this.decoderState = state;
-        this.encoderState = state;
-    }
-
-    @Override
-    public ConnectionState decoderState() {
-        return this.decoderState;
-    }
-
-    @Override
-    public ConnectionState encoderState() {
-        return this.encoderState;
-    }
-
-    @Override
-    public void setDecoderState(ConnectionState decoderState) {
-        this.decoderState = Objects.requireNonNull(decoderState, "decoderState");
-    }
-
-    @Override
-    public void setEncoderState(ConnectionState encoderState) {
-        this.encoderState = Objects.requireNonNull(encoderState, "encoderState");
-    }
 }

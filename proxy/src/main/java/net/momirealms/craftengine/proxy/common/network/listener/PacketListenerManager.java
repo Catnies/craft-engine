@@ -3,7 +3,7 @@ package net.momirealms.craftengine.proxy.common.network.listener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
-import net.momirealms.craftengine.proxy.common.network.ProtocolStateHolder;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.listener.game.*;
 import net.momirealms.craftengine.proxy.common.network.packet.*;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
@@ -91,7 +91,7 @@ public abstract class PacketListenerManager {
     }
 
     // 处理原始数据包 buffer, 将数据包转换为 ProxyPacketContext 并返回最终应继续传递的 buffer
-    public ByteBuf handle(ProtocolStateHolder connection, @Nullable ProxyPlayer player, PacketSide side, ByteBuf buffer) {
+    public ByteBuf handle(ChannelConnection connection, @Nullable ProxyPlayer player, PacketSide side, ByteBuf buffer) {
         if (!buffer.isReadable()) {
             return buffer;
         }

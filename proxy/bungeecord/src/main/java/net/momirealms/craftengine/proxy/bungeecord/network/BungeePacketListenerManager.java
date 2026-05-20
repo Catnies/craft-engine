@@ -2,6 +2,7 @@ package net.momirealms.craftengine.proxy.bungeecord.network;
 
 import io.netty.channel.Channel;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -87,9 +88,11 @@ public class BungeePacketListenerManager extends PacketListenerManager implement
         // Netty channel 早于 Bungee player 创建, 登录后再绑定玩家对象
         ChannelConnection connection = this.connectionsByAddress.get(event.getPlayer().getSocketAddress());
         if (connection == null) {
+            event.getPlayer().disconnect(new TextComponent("[CraftEngine-Proxy] Can't initialize ChannelConnection for " + event.getPlayer().getDisplayName()));
+            this.plugin.getLogger().severe("Can't initialize ChannelConnection for " + event.getPlayer().getDisplayName());
             return;
         }
-        BungeePlayer player = BungeePlayer.wrap(event.getPlayer());
+        BungeePlayer player = BungeePlayer.wrap(event.getPlayer(), connection);
         connection.bind(player);
     }
 

@@ -6,6 +6,7 @@ import net.momirealms.craftengine.proxy.bungeecord.network.BungeePacketListenerM
 import net.momirealms.craftengine.proxy.bungeecord.platform.BungeePlayer;
 import net.momirealms.craftengine.proxy.bungeecord.tag.BungeeNetworkTagDataBridge;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.network.listener.PacketListenerManager;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
@@ -14,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,23 +39,17 @@ public class BungeeCordCraftEngine extends Plugin implements ProxyCraftEngine {
     }
 
     @Override
-    public @Nullable BungeePlayer getOrWrapperPlayer(UUID uuid) {
-        BungeePlayer player = this.onlinePlayers.get(uuid);
-        if (player != null) {
-            return player;
-        }
-        return Optional.ofNullable(this.getProxy().getPlayer(uuid))
-                .map(this::wrap)
-                .orElse(null);
-    }
-
-    @Override
     public @Nullable BungeePlayer getPlayer(UUID uuid) {
         return this.onlinePlayers.get(uuid);
     }
 
-    public BungeePlayer wrap(ProxiedPlayer platform) {
-        return this.onlinePlayers.computeIfAbsent(platform.getUniqueId(), uuid ->  new BungeePlayer(platform));
+    public BungeePlayer wrap(ProxiedPlayer platform, ChannelConnection connection) {
+        return this.onlinePlayers.compute(platform.getUniqueId(), (uuid, current) -> {
+            if (current != null && current.connection() == connection) {
+                return current;
+            }
+            return new BungeePlayer(platform, connection);
+        });
     }
 
     @Override

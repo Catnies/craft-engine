@@ -12,9 +12,6 @@ import java.util.UUID;
 public interface ProxyCraftEngine {
 
     @Nullable
-    ProxyPlayer getOrWrapperPlayer(UUID uuid);
-
-    @Nullable
     ProxyPlayer getPlayer(UUID uuid);
 
     File dataFolderFile();

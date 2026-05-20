@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
 import net.momirealms.craftengine.proxy.common.util.AdventureHelper;
@@ -71,23 +72,17 @@ public class VelocityCraftEngine implements ProxyCraftEngine {
     }
 
     @Override
-    public @Nullable VelocityPlayer getOrWrapperPlayer(UUID uuid) {
-        VelocityPlayer player = this.players.get(uuid);
-        if (player != null) {
-            return player;
-        }
-        return this.server.getPlayer(uuid)
-                .map(this::wrap)
-                .orElse(null);
-    }
-
-    @Override
     public @Nullable VelocityPlayer getPlayer(UUID uuid) {
         return this.players.get(uuid);
     }
 
-    public VelocityPlayer wrap(Player platform) {
-        return this.players.computeIfAbsent(platform.getUniqueId(), uuid ->  new VelocityPlayer(platform));
+    public VelocityPlayer wrap(Player platform, ChannelConnection connection) {
+        return this.players.compute(platform.getUniqueId(), (uuid, current) -> {
+            if (current != null && current.connection() == connection) {
+                return current;
+            }
+            return new VelocityPlayer(platform, connection);
+        });
     }
 
     @Override

@@ -40,7 +40,10 @@ public class VelocityNetworkTagDataBridge{
 
     @Subscribe
     public void onPlayerConnected(ServerPostConnectEvent event) {
-        this.networkTagDataSyncService.sendTagDataVersion(VelocityPlayer.wrap(event.getPlayer()));
+        VelocityPlayer player = this.plugin.getPlayer(event.getPlayer().getUniqueId());
+        if (player != null) {
+            this.networkTagDataSyncService.sendTagDataVersion(player);
+        }
     }
 
     @Subscribe

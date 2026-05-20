@@ -31,19 +31,8 @@ public class ChannelConnection implements ProtocolStateHolder  {
         return this.player;
     }
 
-    // 玩家可用后使用玩家作为状态持有者, 否则回退到 channel 状态
-    public ProtocolStateHolder connection() {
-        ProxyPlayer current = this.player;
-        return current != null ? current : this;
-    }
-
-    // 绑定 BungeeCord 玩家, 并复制登录完成前捕获到的协议状态
+    // 绑定平台玩家身份, 协议状态仍由 ChannelConnection 持有.
     public void bind(ProxyPlayer player) {
-        if (this.protocolVersion >= 0) {
-            player.setProtocolVersion(this.protocolVersion);
-        }
-        player.setDecoderState(this.decoderState);
-        player.setEncoderState(this.encoderState);
         this.player = player;
     }
 
