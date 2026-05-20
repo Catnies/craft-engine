@@ -12,7 +12,7 @@ import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import net.momirealms.craftengine.proxy.velocity.VelocityCraftEngine;
 import net.momirealms.craftengine.proxy.velocity.platform.VelocityPlayer;
 
-public class VelocityNetworkTagDataBridge{
+public class VelocityNetworkTagDataBridge {
     public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.from(NetworkTagDataSyncService.TAG_DATA_CHANNEL);
     private final VelocityCraftEngine plugin;
     private final NetworkTagDataSyncService networkTagDataSyncService;
@@ -50,13 +50,12 @@ public class VelocityNetworkTagDataBridge{
     public void receiveTagData(PluginMessageEvent event) {
         if (!IDENTIFIER.equals(event.getIdentifier())) return;
         event.setResult(PluginMessageEvent.ForwardResult.handled());
+        if (!(event.getSource() instanceof ServerConnection serverConnection)) return;
 
         ByteBuf buffer = Unpooled.buffer(event.getData().length);
         buffer.writeBytes(event.getData());
         ProxyByteBuf in = new ProxyByteBuf(buffer);
-        String serverName = event.getSource() instanceof ServerConnection serverConnection
-                ? serverConnection.getServer().getServerInfo().getName()
-                : null;
+        String serverName = serverConnection.getServer().getServerInfo().getName();
         if (serverName == null) return;
 
         this.networkTagDataSyncService.receiveTagData(serverName, in);
