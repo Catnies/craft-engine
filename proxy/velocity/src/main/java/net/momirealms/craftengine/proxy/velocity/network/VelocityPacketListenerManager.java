@@ -2,7 +2,6 @@ package net.momirealms.craftengine.proxy.velocity.network;
 
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
-import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import io.netty.channel.Channel;
 import net.kyori.adventure.text.Component;
