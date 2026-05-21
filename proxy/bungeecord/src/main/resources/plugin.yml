@@ -1,4 +1,0 @@
-name: CraftEngine
-main: net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine
-version: ${project_version}
-author: Catnies
