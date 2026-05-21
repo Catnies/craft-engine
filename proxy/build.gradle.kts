@@ -21,3 +21,8 @@ dependencies {
     implementation("net.momirealms:sparrow-reflection:${rootProject.properties["sparrow_reflection_version"]}")
     implementation("com.github.ben-manes.caffeine:caffeine:${rootProject.properties["caffeine_version"]}")
 }
+
+tasks.named("build") {
+    dependsOn(":proxy:velocity:build")
+    dependsOn(":proxy:bungeecord:build")
+}

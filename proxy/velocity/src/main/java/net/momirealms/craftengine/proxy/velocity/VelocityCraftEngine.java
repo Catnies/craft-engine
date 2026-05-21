@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Plugin(
         id = "craftengine",
         name = "CraftEngine",
-        version = "26.5",
+        version = BuildInfo.VERSION,
         authors = {"Catnies"}
 )
 public class VelocityCraftEngine implements ProxyCraftEngine {

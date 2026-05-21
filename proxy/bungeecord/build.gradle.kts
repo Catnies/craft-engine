@@ -22,12 +22,6 @@ dependencies {
 }
 
 tasks {
-    processResources {
-        filesMatching("plugin.yml") {
-            expand(rootProject.properties)
-        }
-    }
-
     shadowJar {
         relocation.applyProxy(this)
         archiveFileName = "${rootProject.name}-bungeecord-plugin-${rootProject.properties["project_version"]}.jar"
@@ -40,4 +34,8 @@ bungee {
     version = rootProject.properties["project_version"] as String
     main = "net.momirealms.craftengine.proxy.bungeecord.BungeeCordCraftEngine"
     author = "Catnies"
+}
+
+artifacts {
+    implementation(tasks.shadowJar)
 }
