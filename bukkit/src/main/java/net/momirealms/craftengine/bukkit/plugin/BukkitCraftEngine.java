@@ -431,6 +431,10 @@ public final class BukkitCraftEngine extends CraftEngine {
         return this.javaPlugin;
     }
 
+    public ProxyMessageManager proxyMessageManager() {
+        return this.proxyMessageManager;
+    }
+
     public static BukkitCraftEngine instance() {
         return instance;
     }

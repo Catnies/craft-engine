@@ -3,6 +3,7 @@ package net.momirealms.craftengine.proxy.common.tag;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.platform.ProxyPlayer;
+import net.momirealms.craftengine.proxy.common.util.Key;
 import net.momirealms.craftengine.proxy.common.util.ProxyByteBuf;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 public final class NetworkTagDataSyncService {
     public static final String TAG_DATA_CHANNEL = "craftengine:tag_data";
+    public static final Key TAG_DATA_CHANNEL_KEY = Key.ce("tag_data");
     public static final UUID PROXY_UUID = UUID.randomUUID();
     private final ProxyCraftEngine plugin;
     private final NetworkTagDataRegistry registry;
@@ -17,6 +19,7 @@ public final class NetworkTagDataSyncService {
     public NetworkTagDataSyncService(ProxyCraftEngine plugin) {
         this.plugin = plugin;
         this.registry = new NetworkTagDataRegistry();
+        this.plugin.registerChannel(TAG_DATA_CHANNEL); // 必须注册, 否则会在 CustomPayloadListener 处理之前就被 Proxy 拦截.
     }
 
     public NetworkTagDataRegistry registry() {
@@ -24,20 +27,21 @@ public final class NetworkTagDataSyncService {
     }
 
     @Nullable
-    public NetworkTagData getTagDataForPlayer(ProxyPlayer player) {
-        return this.registry.getForPlayer(player);
+    public NetworkTagData getTagData(ProxyPlayer player) {
+        return this.registry.get(player);
     }
 
-    public void sendTagDataVersion(ProxyPlayer player) {
-        NetworkTagData netWorkTagData = this.getTagDataForPlayer(player);
-        long version = netWorkTagData != null ? netWorkTagData.version() : -1L;
+    @Nullable
+    public NetworkTagData getTagData(String serverName) {
+        return this.registry.get(serverName);
+    }
 
+    public byte[] buildTagDataBytes(@Nullable NetworkTagData networkTagData) {
+        long version = networkTagData != null ? networkTagData.version() : -1L;
         ProxyByteBuf buf = new ProxyByteBuf(Unpooled.buffer());
         buf.writeLong(version);
         buf.writeUUID(PROXY_UUID);
-        byte[] data = new byte[buf.readableBytes()];
-        buf.getBytes(buf.readerIndex(), data);
-        player.sendServerPluginMessage(TAG_DATA_CHANNEL, data);
+        return buf.array();
     }
 
     public void receiveTagData(String serverName, ProxyByteBuf in) {

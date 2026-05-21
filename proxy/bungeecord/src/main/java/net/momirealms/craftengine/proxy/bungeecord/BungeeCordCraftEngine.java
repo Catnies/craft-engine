@@ -43,6 +43,11 @@ public class BungeeCordCraftEngine extends Plugin implements ProxyCraftEngine {
         return this.onlinePlayers.get(uuid);
     }
 
+    @Override
+    public void registerChannel(String channel) {
+        this.getProxy().registerChannel(channel);
+    }
+
     public BungeePlayer wrap(ProxiedPlayer platform, ChannelConnection connection) {
         return this.onlinePlayers.compute(platform.getUniqueId(), (uuid, current) -> {
             if (current != null && current.connection() == connection) {

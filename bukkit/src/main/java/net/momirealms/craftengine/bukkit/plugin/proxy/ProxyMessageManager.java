@@ -1,16 +1,18 @@
 package net.momirealms.craftengine.bukkit.plugin.proxy;
 
 import io.netty.buffer.Unpooled;
+import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.core.font.NetworkTagDataSerializer;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
+import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -19,55 +21,36 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class ProxyMessageManager implements Listener, PluginMessageListener {
-    private static final String TAG_DATA_IDENTIFIER = "craftengine:tag_data";
+public final class ProxyMessageManager implements Listener {
+    public static final Key TAG_DATA_IDENTIFIER = Key.ce("tag_data");
+    public static final boolean ENABLE_PROXY = Bukkit.getServer().getServerConfig().isProxyEnabled();
     private final BukkitCraftEngine plugin;
     private final Map<UUID, Set<UUID>> proxyPlayers = new ConcurrentHashMap<>(); // ProxyUUID -> Set<PlayerUUID>
     private final Map<UUID, UUID> proxyByPlayer = new ConcurrentHashMap<>(); // PlayerUUID -> ProxyUUID
     private long networkTagDataVersion = System.currentTimeMillis();
-    private FriendlyByteBuf tagDataBuf;
+    private FriendlyByteBuf tagDataBufCache;
 
     public ProxyMessageManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
-        if (Bukkit.getServer().getServerConfig().isProxyEnabled()) {
+        if (ENABLE_PROXY) {
             Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
-            Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(plugin.javaPlugin(), TAG_DATA_IDENTIFIER);
-            Bukkit.getServer().getMessenger().registerIncomingPluginChannel(plugin.javaPlugin(), TAG_DATA_IDENTIFIER, this);
         }
-    }
-
-    private FriendlyByteBuf buildTagDataBuf() {
-        FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
-        byteBuf.writeLong(System.currentTimeMillis()); // Version
-        NetworkTagDataSerializer.writeOffsetFont(byteBuf, this.plugin.fontManager().offsetFont());
-        NetworkTagDataSerializer.writeImages(byteBuf, this.plugin.fontManager().loadedImages());
-        NetworkTagDataSerializer.writeL10n(byteBuf, this.plugin.translationManager());
-        NetworkTagDataSerializer.writeGlobalVariables(byteBuf, this.plugin.globalVariableManager());
-        return byteBuf;
-    }
-
-    public boolean sendTagData(Player player) {
-        if (player.isConnected()) {
-            if (this.tagDataBuf == null) {
-                this.tagDataBuf = this.buildTagDataBuf();
-            }
-            player.sendPluginMessage(plugin.javaPlugin(), "craftengine:tag_data", this.tagDataBuf.array());
-            return true;
-        }
-        return false;
     }
 
     // 插件重载, 让每个玩家都刷新自身链接的代理服务器.
     @EventHandler
     public void onPluginReload(CraftEngineReloadEvent event) {
         this.networkTagDataVersion = System.currentTimeMillis();
-        this.tagDataBuf = this.buildTagDataBuf();
+        this.tagDataBufCache = this.buildNetworkTagDataBuf();
         this.proxyPlayers.values().forEach(set -> {
             for (UUID playerUUID : set) {
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (player != null && player.isConnected()) {
-                    this.sendTagData(player);
-                    break;
+                    BukkitServerPlayer bukkitServerPlayer = BukkitAdaptor.adapt(player);
+                    if (bukkitServerPlayer != null) {
+                        this.updateNetworkTagData(bukkitServerPlayer);
+                        break;
+                    }
                 }
             }
         });
@@ -82,20 +65,36 @@ public final class ProxyMessageManager implements Listener, PluginMessageListene
                 .map(it -> it.remove(playerUUID));
     }
 
+    /**
+     * NetworkTagData
+     */
     // 当收到玩家进服后的数据版本号, 决定是否要重发包回去.
-    @Override
-    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (!channel.equals("craftengine:tag_data")) return;
-
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(message));
+    public void handleTagDataVersionFromProxy(@NotNull BukkitServerPlayer player, FriendlyByteBuf buf) {
         long dataVersion = buf.readLong();
         UUID proxyUUID = buf.readUUID();
         // 记录玩家所在的代理服务器.
-        proxyPlayers.computeIfAbsent(proxyUUID, it -> ConcurrentHashMap.newKeySet()).add(player.getUniqueId());
-        proxyByPlayer.put(player.getUniqueId(), proxyUUID);
+        proxyPlayers.computeIfAbsent(proxyUUID, it -> ConcurrentHashMap.newKeySet()).add(player.uuid());
+        proxyByPlayer.put(player.uuid(), proxyUUID);
         // 更新字体数据.
         if (dataVersion != this.networkTagDataVersion) {
-            this.sendTagData(player);
+            this.updateNetworkTagData(player);
         }
+    }
+
+    private void updateNetworkTagData(BukkitServerPlayer player) {
+        if (this.tagDataBufCache == null) {
+            this.tagDataBufCache = this.buildNetworkTagDataBuf();
+        }
+        player.sendCustomPayload(TAG_DATA_IDENTIFIER, this.tagDataBufCache.array());
+    }
+
+    private FriendlyByteBuf buildNetworkTagDataBuf() {
+        FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
+        byteBuf.writeLong(System.currentTimeMillis()); // Version
+        NetworkTagDataSerializer.writeOffsetFont(byteBuf, this.plugin.fontManager().offsetFont());
+        NetworkTagDataSerializer.writeImages(byteBuf, this.plugin.fontManager().loadedImages());
+        NetworkTagDataSerializer.writeL10n(byteBuf, this.plugin.translationManager());
+        NetworkTagDataSerializer.writeGlobalVariables(byteBuf, this.plugin.globalVariableManager());
+        return byteBuf;
     }
 }

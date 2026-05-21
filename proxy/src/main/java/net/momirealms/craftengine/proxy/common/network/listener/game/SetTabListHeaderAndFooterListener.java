@@ -39,7 +39,7 @@ public final class SetTabListHeaderAndFooterListener {
         @Override
         public void handle(ChannelConnection connection, @Nullable ProxyPlayer player, PacketContext packet) {
             if (player == null) return;
-            NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagDataForPlayer(player);
+            NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagData(player);
             if (netWorkTagData == null) return;
 
             ClientVersion clientVersion = packet.clientVersion();
@@ -69,7 +69,7 @@ public final class SetTabListHeaderAndFooterListener {
         @Override
         public void handle(ChannelConnection connection, @Nullable ProxyPlayer player, PacketContext packet) {
             if (player == null) return;
-            NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagDataForPlayer(player);
+            NetworkTagData netWorkTagData = this.plugin.networkTagDataSyncService().getTagData(player);
             if (netWorkTagData == null) return;
 
             ClientVersion clientVersion = packet.clientVersion();

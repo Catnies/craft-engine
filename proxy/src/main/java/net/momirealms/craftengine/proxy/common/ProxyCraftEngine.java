@@ -14,6 +14,8 @@ public interface ProxyCraftEngine {
     @Nullable
     ProxyPlayer getPlayer(UUID uuid);
 
+    void registerChannel(String channel);
+
     File dataFolderFile();
 
     Path dataFolderPath();

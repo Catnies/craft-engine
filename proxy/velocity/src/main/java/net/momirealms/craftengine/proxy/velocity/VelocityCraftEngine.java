@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.tag.NetworkTagDataSyncService;
@@ -74,6 +75,11 @@ public class VelocityCraftEngine implements ProxyCraftEngine {
     @Override
     public @Nullable VelocityPlayer getPlayer(UUID uuid) {
         return this.players.get(uuid);
+    }
+
+    @Override
+    public void registerChannel(String channel) {
+        this.server.getChannelRegistrar().register(MinecraftChannelIdentifier.from(channel));
     }
 
     public VelocityPlayer wrap(Player platform, ChannelConnection connection) {

@@ -17,7 +17,7 @@ public final class NetworkTagDataRegistry {
     }
 
     @Nullable
-    public NetworkTagData getForPlayer(ProxyPlayer player) {
+    public NetworkTagData get(ProxyPlayer player) {
         return Optional.ofNullable(player.server())
                 .map(BackendServer::name)
                 .map(this::get)

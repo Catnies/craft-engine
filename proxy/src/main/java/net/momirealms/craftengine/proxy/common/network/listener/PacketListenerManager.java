@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.proxy.common.ProxyCraftEngine;
 import net.momirealms.craftengine.proxy.common.network.ChannelConnection;
+import net.momirealms.craftengine.proxy.common.network.listener.common.CustomPayloadListener;
 import net.momirealms.craftengine.proxy.common.network.listener.game.*;
 import net.momirealms.craftengine.proxy.common.network.packet.*;
 import net.momirealms.craftengine.proxy.common.network.protocol.ConnectionState;
@@ -28,6 +29,7 @@ public abstract class PacketListenerManager {
 
     // 注册常规监听器
     protected void registerPacketListeners() {
+        CustomPayloadListener.register(this.packetRegistry, this.plugin());
         SetTabListHeaderAndFooterListener.register(this.packetRegistry, this.plugin());
         SetPlayerTeamListener.register(this.packetRegistry, this.plugin());
         SetBossBarListener.register(this.packetRegistry, this.plugin());
