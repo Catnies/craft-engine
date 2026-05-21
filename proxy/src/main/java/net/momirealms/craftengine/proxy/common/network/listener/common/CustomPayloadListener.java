@@ -21,16 +21,16 @@ public final class CustomPayloadListener {
     private CustomPayloadListener() {}
 
     public static void register(PacketHandlerRegistry registry, ProxyCraftEngine plugin) {
-        registry.register(PacketRoute.typed(ConnectionState.CONFIGURATION, PacketType.Configuration.Client.PLUGIN_MESSAGE), new Client_Handler(plugin));
-        registry.register(PacketRoute.typed(ConnectionState.CONFIGURATION, PacketType.Configuration.Server.PLUGIN_MESSAGE), new Server_Handler(plugin));
-        registry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Client.PLUGIN_MESSAGE), new Client_Handler(plugin));
-        registry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.PLUGIN_MESSAGE), new Server_Handler(plugin));
+        registry.register(PacketRoute.typed(ConnectionState.CONFIGURATION, PacketType.Configuration.Client.PLUGIN_MESSAGE), new ClientboundHandler(plugin));
+        registry.register(PacketRoute.typed(ConnectionState.CONFIGURATION, PacketType.Configuration.Server.PLUGIN_MESSAGE), new ServerboundHandler(plugin));
+        registry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Client.PLUGIN_MESSAGE), new ClientboundHandler(plugin));
+        registry.register(PacketRoute.typed(ConnectionState.PLAY, PacketType.Play.Server.PLUGIN_MESSAGE), new ServerboundHandler(plugin));
     }
 
-    private static final class Client_Handler implements PacketHandler {
+    private static final class ClientboundHandler implements PacketHandler {
         private final ProxyCraftEngine plugin;
 
-        private Client_Handler(ProxyCraftEngine plugin) {
+        private ClientboundHandler(ProxyCraftEngine plugin) {
             this.plugin = plugin;
         }
 
@@ -45,10 +45,10 @@ public final class CustomPayloadListener {
         }
     }
 
-    private static final class Server_Handler implements PacketHandler {
+    private static final class ServerboundHandler implements PacketHandler {
         private final ProxyCraftEngine plugin;
 
-        private Server_Handler(ProxyCraftEngine plugin) {
+        private ServerboundHandler(ProxyCraftEngine plugin) {
             this.plugin = plugin;
         }
 
@@ -64,6 +64,7 @@ public final class CustomPayloadListener {
                         .ifPresent(name -> {
                             this.plugin.networkTagDataSyncService().receiveTagData(name, buf);
                         });
+                packet.setCancelled(true);
             }
         }
     }
